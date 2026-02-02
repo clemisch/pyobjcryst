@@ -57,8 +57,7 @@ bp::dict _GetVarianceCovarianceMap(LSQNumObj & lsq)
     {
         const RefinablePar *pi = it->first.first;
         const RefinablePar *pj = it->first.second;
-        d[bp::make_tuple(bp::ptr(const_cast<RefinablePar*>(pi)),
-                         bp::ptr(const_cast<RefinablePar*>(pj)))] = it->second;
+        d[bp::make_tuple(pi->GetName(), pj->GetName())] = it->second;
     }
     return d;
 }
