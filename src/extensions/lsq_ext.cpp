@@ -19,6 +19,8 @@
 
 #include <boost/python/class.hpp>
 #include <boost/python/copy_const_reference.hpp>
+#include <boost/python/dict.hpp>
+#include <boost/python/tuple.hpp>
 
 #include <string>
 
@@ -43,6 +45,22 @@ bool _SafeRefine(LSQNumObj & lsq, REAL maxChi2factor, int nbCycle, bool useLeven
     std::list<const RefParType*> vnewpartype;
     return lsq.SafeRefine(vnewpar, vnewpartype, nbCycle, useLevenbergMarquardt, silent,
                           callBeginEndOptimization, minChi2var);
+}
+
+bp::dict _GetVarianceCovarianceMap(LSQNumObj & lsq)
+{
+    const std::map<std::pair<const RefinablePar*, const RefinablePar*>, REAL> &m =
+        lsq.GetVarianceCovarianceMap();
+    bp::dict d;
+    for (std::map<std::pair<const RefinablePar*, const RefinablePar*>, REAL>::const_iterator it = m.begin();
+         it != m.end(); ++it)
+    {
+        const RefinablePar *pi = it->first.first;
+        const RefinablePar *pj = it->first.second;
+        d[bp::make_tuple(bp::ptr(const_cast<RefinablePar*>(pi)),
+                         bp::ptr(const_cast<RefinablePar*>(pj)))] = it->second;
+    }
+    return d;
 }
 
 }   // namespace
@@ -102,6 +120,7 @@ void wrap_lsq()
         .def("GetLSQDeriv", &LSQNumObj::GetLSQDeriv,
                 bp::arg("par"),
                 return_value_policy<copy_const_reference>())
+        .def("GetVarianceCovarianceMap", &_GetVarianceCovarianceMap)
         .def("BeginOptimization", &LSQNumObj::BeginOptimization,
                 (bp::arg("allowApproximations")=false,
                  bp::arg("enableRestraints")=false))
