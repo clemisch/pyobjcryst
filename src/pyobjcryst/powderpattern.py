@@ -552,17 +552,23 @@ class PowderPattern(PowderPattern_objcryst):
                 # Need to update the hkl list
                 self._do_plot_hkl()
 
-    def qpa(self, verbose=False):
+    def qpa(self, verbose=False, lsq=None, return_sigma=False):
         """Get the quantitative phase analysis for the current powder
         pattern, when multiple crystalline phases are present.
 
         :param verbose: if True, print the Crystal names and their
             weight percentage.
+        :param lsq: optional LSQ object used to compute analytical
+            uncertainties from the variance-covariance map.
+        :param return_sigma: if True and lsq is provided, return weight
+            fractions with their 1-sigma uncertainties.
         :return: a dictionary with the PowderPatternDiffraction object
-            as key, and the weight percentages as value.
+            as key, and the weight percentages as value. If
+            return_sigma is True, values are (weight, sigma).
         """
         res = {}
         szmv_sum = 0
+        pdiffs = []
         for pdiff in self.get_crystalline_components():
             if not isinstance(pdiff, PowderPatternDiffraction):
                 continue
@@ -574,6 +580,7 @@ class PowderPattern(PowderPattern_objcryst):
             # print("%25s: %12f, %10f, %3d, %10.2f" % (c.GetName(), s, m, z, v))
             res[pdiff] = s * z * m * v
             szmv_sum += s * z * m * v
+            pdiffs.append(pdiff)
 
         if verbose:
             print("Weight percentages:")
@@ -583,7 +590,100 @@ class PowderPattern(PowderPattern_objcryst):
                 print(
                     "%25s: %6.2f%%" % (k.GetCrystal().GetName(), res[k] * 100)
                 )
-        return res
+
+        if not return_sigma:
+            return res
+        if lsq is None:
+            raise ValueError("lsq must be provided when return_sigma is True")
+
+        cov = lsq.GetVarianceCovarianceMap()
+        if cov is None:
+            raise ValueError("variance-covariance map not available from LSQ")
+
+        # Build a mapping from phases to scale-parameter names
+        obj = lsq.GetCompiledRefinedObj()
+        scale_param_names = []
+        for i in range(obj.GetNbPar()):
+            name = obj.GetPar(i).GetName()
+            if name.startswith("Scale_"):
+                scale_param_names.append(name)
+
+        name_used = set()
+        pdiff_to_scale_name = {}
+        for pdiff in pdiffs:
+            base = "Scale_" + pdiff.GetName()
+            candidates = []
+            for name in scale_param_names:
+                if name in name_used:
+                    continue
+                if name == base or (name.startswith(base) and set(name[len(base):]) <= set("~")):
+                    candidates.append(name)
+            if candidates:
+                candidates.sort(key=len)
+                chosen = candidates[0]
+                name_used.add(chosen)
+                pdiff_to_scale_name[pdiff] = chosen
+                continue
+            # Fallback: match by value if names are not unique/empty
+            s = self.GetScaleFactor(pdiff)
+            best = None
+            best_err = None
+            for name in scale_param_names:
+                if name in name_used:
+                    continue
+                try:
+                    val = obj.GetPar(name).GetValue()
+                except Exception:
+                    continue
+                err = abs(val - s)
+                if best_err is None or err < best_err:
+                    best_err = err
+                    best = name
+            if best is not None:
+                name_used.add(best)
+                pdiff_to_scale_name[pdiff] = best
+
+        n = len(pdiffs)
+        if len(pdiff_to_scale_name) != n:
+            raise ValueError("could not map all phase scales to covariance parameters")
+
+        # Build vectors for analytical propagation
+        a = np.zeros(n, dtype=float)
+        s = np.zeros(n, dtype=float)
+        names = []
+        for i, pdiff in enumerate(pdiffs):
+            c = pdiff.GetCrystal()
+            a[i] = c.GetSpaceGroup().GetNbSymmetrics() * c.GetWeight() * c.GetVolume()
+            s[i] = self.GetScaleFactor(pdiff)
+            names.append(pdiff_to_scale_name[pdiff])
+
+        f = s * a
+        S = np.sum(f)
+        w = f / S
+
+        J = np.empty((n, n), dtype=float)
+        for i in range(n):
+            for j in range(n):
+                J[i, j] = (a[j] / S) * (1.0 if i == j else 0.0 - w[i])
+
+        cov_s = np.zeros((n, n), dtype=float)
+        for i in range(n):
+            for j in range(n):
+                key = (names[i], names[j])
+                if key in cov:
+                    cov_s[i, j] = cov[key]
+                else:
+                    key = (names[j], names[i])
+                    cov_s[i, j] = cov.get(key, 0.0)
+
+        cov_w = J.dot(cov_s).dot(J.T)
+        sigma = np.sqrt(np.clip(np.diag(cov_w), 0.0, None))
+
+        res_sigma = {}
+        for i, pdiff in enumerate(pdiffs):
+            res_sigma[pdiff.GetName()] = w[i], sigma[i]
+
+        return res_sigma
 
 
 def create_powderpattern_from_cif(file):
@@ -646,6 +746,7 @@ def wrap_boost_powderpattern(c: PowderPattern):
             "enable_display_update",
             "plot",
             "_do_plot_hkl",
+            "SetPowderPatternObsAndSigma",
             "quick_fit_profile",
             "get_background",
             "get_crystalline_components",
