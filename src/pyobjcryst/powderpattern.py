@@ -686,81 +686,81 @@ class PowderPattern(PowderPattern_objcryst):
 
 
 
-def qpa2(self, verbose=False, lsq=None):
-        """Get the quantitative phase analysis for the current powder
-        pattern, when multiple crystalline phases are present.
+    def qpa2(self, verbose=False, lsq=None):
+            """Get the quantitative phase analysis for the current powder
+            pattern, when multiple crystalline phases are present.
 
-        :param verbose: if True, print the Crystal names and their
-            weight percentage.
-        :param lsq: optional LSQ object used to perform error propagation 
-            using covariance map.
-        :return: a dictionary with the PowderPatternDiffraction object
-            as key, and the weight percentages as value. If
-            return_sigma is True, values are (weight, sigma).
-        """
-        res = {}
-        szmv_sum = 0
-        for pdiff in self.get_crystalline_components():
-            s = self.GetScaleFactor(pdiff)
-            c = pdiff.GetCrystal()
-            m = c.GetWeight()
-            z = c.GetSpaceGroup().GetNbSymmetrics()
-            v = c.GetVolume()
-            # print("%25s: %12f, %10f, %3d, %10.2f" % (c.GetName(), s, m, z, v))
-            res[pdiff] = s * z * m * v
-            szmv_sum += s * z * m * v
+            :param verbose: if True, print the Crystal names and their
+                weight percentage.
+            :param lsq: optional LSQ object used to perform error propagation 
+                using covariance map.
+            :return: a dictionary with the PowderPatternDiffraction object
+                as key, and the weight percentages as value. If
+                return_sigma is True, values are (weight, sigma).
+            """
+            res = {}
+            szmv_sum = 0
+            for pdiff in self.get_crystalline_components():
+                s = self.GetScaleFactor(pdiff)
+                c = pdiff.GetCrystal()
+                m = c.GetWeight()
+                z = c.GetSpaceGroup().GetNbSymmetrics()
+                v = c.GetVolume()
+                # print("%25s: %12f, %10f, %3d, %10.2f" % (c.GetName(), s, m, z, v))
+                res[pdiff] = s * z * m * v
+                szmv_sum += s * z * m * v
 
-        if verbose:
-            print("Weight percentages:")
-        for k, v in res.items():
-            res[k] = v / szmv_sum
             if verbose:
-                print(
-                    "%25s: %6.2f%%" % (k.GetCrystal().GetName(), res[k] * 100)
-                )
+                print("Weight percentages:")
+            for k, v in res.items():
+                res[k] = v / szmv_sum
+                if verbose:
+                    print(
+                        "%25s: %6.2f%%" % (k.GetCrystal().GetName(), res[k] * 100)
+                    )
 
-        if lsq is None:
-            return res
+            if lsq is None:
+                return res
 
 
-        pdiffs = self.get_crystalline_components()
-        N = len(pdiffs)
+            pdiffs = self.get_crystalline_components()
+            N = len(pdiffs)
 
-        a = np.zeros(N)
-        s = np.zeros(N)
-        for i in range(N):
-            c_i = pdiffs[i].GetCrystal()
-            a[i] = c_i.GetSpaceGroup().GetNbSymmetrics() * c_i.GetWeight() * c_i.GetVolume()
-            s[i] = self.GetScaleFactor(pdiffs[i])
-        
-        S = np.sum(a * s)
-        w = a * s / S
+            a = np.zeros(N)
+            s = np.zeros(N)
+            for i in range(N):
+                c_i = pdiffs[i].GetCrystal()
+                a[i] = c_i.GetSpaceGroup().GetNbSymmetrics() * c_i.GetWeight() * c_i.GetVolume()
+                s[i] = self.GetScaleFactor(pdiffs[i])
+            
+            S = np.sum(a * s)
+            w = a * s / S
 
-        Σs_dict = lsq.GetVarianceCovarianceMap()
-        δ_ij = lambda i, j: 1 if i == j else 0
+            Σs_dict = lsq.GetVarianceCovarianceMap()
+            δ_ij = lambda i, j: 1 if i == j else 0
 
-        Σs = np.zeros((N, N))
-        J = np.zeros((N, N))
-        for i in range(N):
-            for j in range(N):
-                Σs[i, j] = Σs_dict[("Scale_" + "~"*i, "Scale_" + "~"*j)]
-                J[i, j] = a[i] / S * (δ_ij(i, j) - s[i] * a[j] / S)
+            Σs = np.zeros((N, N))
+            J = np.zeros((N, N))
+            for i in range(N):
+                for j in range(N):
+                    Σs[i, j] = Σs_dict[("Scale_" + "~"*i, "Scale_" + "~"*j)]
+                    J[i, j] = a[i] / S * (δ_ij(i, j) - s[i] * a[j] / S)
 
-        Σw = J @ Σs @ J.T
+            Σw = J @ Σs @ J.T
 
-        # Σw_dict = {}
-        # for i in range(N):
-        #     for j in range(N):
-        #         name_i = pdiffs[i].GetCrystal().GetName()
-        #         name_j = pdiffs[j].GetCrystal().GetName()
-        #         Σw_dict[(name_i, name_j)] = Σw[i, j]
+            # Σw_dict = {}
+            # for i in range(N):
+            #     for j in range(N):
+            #         name_i = pdiffs[i].GetCrystal().GetName()
+            #         name_j = pdiffs[j].GetCrystal().GetName()
+            #         Σw_dict[(name_i, name_j)] = Σw[i, j]
 
-        w_dict = {}
-        for i in range(N):
-            name_i = pdiffs[i].GetCrystal().GetName()
-            w_dict[name_i] = w[i], np.sqrt(Σw[i, i])
+            w_dict = {}
+            for i in range(N):
+                name_i = pdiffs[i].GetCrystal().GetName()
+                w_dict[name_i] = w[i], np.sqrt(Σw[i, i])
 
-        return w_dict
+            return w_dict
 
 
 def create_powderpattern_from_cif(file):
