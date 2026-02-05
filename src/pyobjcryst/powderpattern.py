@@ -552,16 +552,12 @@ class PowderPattern(PowderPattern_objcryst):
                 # Need to update the hkl list
                 self._do_plot_hkl()
 
-    def qpa(self, verbose=False, lsq=None, return_sigma=False):
+    def qpa(self, verbose=False):
         """Get the quantitative phase analysis for the current powder
         pattern, when multiple crystalline phases are present.
 
         :param verbose: if True, print the Crystal names and their
             weight percentage.
-        :param lsq: optional LSQ object used to compute analytical
-            uncertainties from the variance-covariance map.
-        :param return_sigma: if True and lsq is provided, return weight
-            fractions with their 1-sigma uncertainties.
         :return: a dictionary with the PowderPatternDiffraction object
             as key, and the weight percentages as value. If
             return_sigma is True, values are (weight, sigma).
@@ -589,178 +585,54 @@ class PowderPattern(PowderPattern_objcryst):
                     "%25s: %6.2f%%" % (k.GetCrystal().GetName(), res[k] * 100)
                 )
 
-        if not return_sigma:
-            return res
+        return res
+
+
+
+    def qpa_sigma(self, verbose=False, lsq=None):
+        """\
+        Get the quantitative phase analysis for the current powder
+        pattern including error propagation from phase scale covariance
+        matrix. 
+
+        :param verbose: if True, print the Crystal names and their
+            weight percentage.
+        :param lsq: optional LSQ object used to perform error propagation 
+            using covariance map.
+        :return: a dictionary with the PowderPatternDiffraction Crystal name
+            as key, and the weight ratios and sigmas as value.
+        """
+        pdiffs = self.get_crystalline_components()
+        N = len(pdiffs)
+
+        coeffs = np.zeros(N)
+        scales = np.zeros(N)
+        for i in range(N):
+            cryst_i = pdiffs[i].GetCrystal()
+            coeffs[i] = cryst_i.GetSpaceGroup().GetNbSymmetrics() * cryst_i.GetWeight() * cryst_i.GetVolume()
+            scales[i] = self.GetScaleFactor(pdiffs[i])
         
-        if lsq is None:
-            raise ValueError("lsq must be provided when return_sigma is True")
+        w_sum = np.sum(coeffs * scales)
+        w = coeffs * scales / w_sum
 
-        cov = lsq.GetVarianceCovarianceMap()
-        if cov is None:
-            raise ValueError("variance-covariance map not available from LSQ")
+        Σs_dict = lsq.GetVarianceCovarianceMap()
+        δ_ij = lambda i, j: 1 if i == j else 0
 
-        # Build a mapping from phases to scale-parameter names
-        obj = lsq.GetCompiledRefinedObj()
-        scale_param_names = []
-        for i in range(obj.GetNbPar()):
-            name = obj.GetPar(i).GetName()
-            if name.startswith("Scale_"):
-                scale_param_names.append(name)
+        Σs = np.zeros((N, N))
+        Jac = np.zeros((N, N))
+        for i in range(N):
+            for j in range(N):
+                Σs[i, j] = Σs_dict[("Scale_" + "~"*i, "Scale_" + "~"*j)]
+                Jac[i, j] = coeffs[i] / w_sum * (δ_ij(i, j) - scales[i] * coeffs[j] / w_sum)
 
-        name_used = set()
-        pdiff_to_scale_name = {}
-        for pdiff in pdiffs:
-            base = "Scale_" + pdiff.GetName()
-            candidates = []
-            for name in scale_param_names:
-                if name in name_used:
-                    continue
-                if name == base or (name.startswith(base) and set(name[len(base):]) <= set("~")):
-                    candidates.append(name)
-            if candidates:
-                candidates.sort(key=len)
-                chosen = candidates[0]
-                name_used.add(chosen)
-                pdiff_to_scale_name[pdiff] = chosen
-                continue
-            # Fallback: match by value if names are not unique/empty
-            s = self.GetScaleFactor(pdiff)
-            best = None
-            best_err = None
-            for name in scale_param_names:
-                if name in name_used:
-                    continue
-                try:
-                    val = obj.GetPar(name).GetValue()
-                except Exception:
-                    continue
-                err = abs(val - s)
-                if best_err is None or err < best_err:
-                    best_err = err
-                    best = name
-            if best is not None:
-                name_used.add(best)
-                pdiff_to_scale_name[pdiff] = best
+        Σw = Jac @ Σs @ Jac.T
 
-        n = len(pdiffs)
-        if len(pdiff_to_scale_name) != n:
-            raise ValueError("could not map all phase scales to covariance parameters")
+        w_dict = {}
+        for i in range(N):
+            name_i = pdiffs[i].GetCrystal().GetName()
+            w_dict[name_i] = w[i], np.sqrt(Σw[i, i])
 
-        # Build vectors for analytical propagation
-        a = np.zeros(n, dtype=float)
-        s = np.zeros(n, dtype=float)
-        names = []
-        for i, pdiff in enumerate(pdiffs):
-            c = pdiff.GetCrystal()
-            a[i] = c.GetSpaceGroup().GetNbSymmetrics() * c.GetWeight() * c.GetVolume()
-            s[i] = self.GetScaleFactor(pdiff)
-            names.append(pdiff_to_scale_name[pdiff])
-
-        f = s * a
-        S = np.sum(f)
-        w = f / S
-
-        J = np.empty((n, n), dtype=float)
-        for i in range(n):
-            for j in range(n):
-                J[i, j] = (a[j] / S) * (1.0 if i == j else 0.0 - w[i])
-
-        cov_s = np.zeros((n, n), dtype=float)
-        for i in range(n):
-            for j in range(n):
-                key = (names[i], names[j])
-                if key in cov:
-                    cov_s[i, j] = cov[key]
-                else:
-                    key = (names[j], names[i])
-                    cov_s[i, j] = cov.get(key, 0.0)
-
-        cov_w = J.dot(cov_s).dot(J.T)
-        sigma = np.sqrt(np.clip(np.diag(cov_w), 0.0, None))
-
-        res_sigma = {}
-        for i, pdiff in enumerate(pdiffs):
-            res_sigma[pdiff.GetCrystal().GetName()] = (w[i], sigma[i])
-
-        return res_sigma
-
-
-
-    def qpa2(self, verbose=False, lsq=None):
-            """Get the quantitative phase analysis for the current powder
-            pattern, when multiple crystalline phases are present.
-
-            :param verbose: if True, print the Crystal names and their
-                weight percentage.
-            :param lsq: optional LSQ object used to perform error propagation 
-                using covariance map.
-            :return: a dictionary with the PowderPatternDiffraction object
-                as key, and the weight percentages as value. If
-                return_sigma is True, values are (weight, sigma).
-            """
-            res = {}
-            szmv_sum = 0
-            for pdiff in self.get_crystalline_components():
-                s = self.GetScaleFactor(pdiff)
-                c = pdiff.GetCrystal()
-                m = c.GetWeight()
-                z = c.GetSpaceGroup().GetNbSymmetrics()
-                v = c.GetVolume()
-                # print("%25s: %12f, %10f, %3d, %10.2f" % (c.GetName(), s, m, z, v))
-                res[pdiff] = s * z * m * v
-                szmv_sum += s * z * m * v
-
-            if verbose:
-                print("Weight percentages:")
-            for k, v in res.items():
-                res[k] = v / szmv_sum
-                if verbose:
-                    print(
-                        "%25s: %6.2f%%" % (k.GetCrystal().GetName(), res[k] * 100)
-                    )
-
-            if lsq is None:
-                return res
-
-
-            pdiffs = self.get_crystalline_components()
-            N = len(pdiffs)
-
-            a = np.zeros(N)
-            s = np.zeros(N)
-            for i in range(N):
-                c_i = pdiffs[i].GetCrystal()
-                a[i] = c_i.GetSpaceGroup().GetNbSymmetrics() * c_i.GetWeight() * c_i.GetVolume()
-                s[i] = self.GetScaleFactor(pdiffs[i])
-            
-            S = np.sum(a * s)
-            w = a * s / S
-
-            Σs_dict = lsq.GetVarianceCovarianceMap()
-            δ_ij = lambda i, j: 1 if i == j else 0
-
-            Σs = np.zeros((N, N))
-            J = np.zeros((N, N))
-            for i in range(N):
-                for j in range(N):
-                    Σs[i, j] = Σs_dict[("Scale_" + "~"*i, "Scale_" + "~"*j)]
-                    J[i, j] = a[i] / S * (δ_ij(i, j) - s[i] * a[j] / S)
-
-            Σw = J @ Σs @ J.T
-
-            # Σw_dict = {}
-            # for i in range(N):
-            #     for j in range(N):
-            #         name_i = pdiffs[i].GetCrystal().GetName()
-            #         name_j = pdiffs[j].GetCrystal().GetName()
-            #         Σw_dict[(name_i, name_j)] = Σw[i, j]
-
-            w_dict = {}
-            for i in range(N):
-                name_i = pdiffs[i].GetCrystal().GetName()
-                w_dict[name_i] = w[i], np.sqrt(Σw[i, i])
-
-            return w_dict
+        return w_dict
 
 
 def create_powderpattern_from_cif(file):
