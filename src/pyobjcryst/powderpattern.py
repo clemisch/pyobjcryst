@@ -589,15 +589,13 @@ class PowderPattern(PowderPattern_objcryst):
 
 
 
-    def qpa_sigma(self, verbose=False, lsq=None):
+    def qpa_sigma(self, lsq):
         """\
         Get the quantitative phase analysis for the current powder
         pattern including error propagation from phase scale covariance
         matrix. 
 
-        :param verbose: if True, print the Crystal names and their
-            weight percentage.
-        :param lsq: optional LSQ object used to perform error propagation 
+        :param lsq: LSQ object used to perform error propagation 
             using covariance map.
         :return: a dictionary with the PowderPatternDiffraction Crystal name
             as key, and the weight ratios and sigmas as value.
@@ -622,6 +620,7 @@ class PowderPattern(PowderPattern_objcryst):
         Jac = np.zeros((N, N))
         for i in range(N):
             for j in range(N):
+                # TODO: I'm not 100% sure indices i always correspond to number of '~'
                 Σs[i, j] = Σs_dict[("Scale_" + "~"*i, "Scale_" + "~"*j)]
                 Jac[i, j] = coeffs[i] / w_sum * (δ_ij(i, j) - scales[i] * coeffs[j] / w_sum)
 
