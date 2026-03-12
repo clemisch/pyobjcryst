@@ -425,6 +425,7 @@ class PowderPattern(PowderPattern_objcryst):
         if displ_transl:
             lsq.SetParIsFixed("2ThetaDispl", True)
             lsq.SetParIsFixed("2ThetaTransp", True)
+            lsq.SetParIsFixed("2ThetaFlatDetDispRatio", True)
         if lsqr.GetNbParNotFixed():
             lsq.SafeRefine(nbCycle=10, useLevenbergMarquardt=True, silent=True)
             pdiff.ExtractLeBail(10)
