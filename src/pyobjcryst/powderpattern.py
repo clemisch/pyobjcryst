@@ -621,7 +621,8 @@ class PowderPattern(PowderPattern_objcryst):
         for i in range(N):
             for j in range(N):
                 # TODO: I'm not 100% sure indices i always correspond to number of '~'
-                Σs[i, j] = Σs_dict[("Scale_" + "~"*i, "Scale_" + "~"*j)]
+                # Σs[i, j] = Σs_dict[("Scale_" + "~"*i, "Scale_" + "~"*j)]
+                Σs[i, j] = Σs_dict.get(("Scale_" + "~"*i, "Scale_" + "~"*j), 0.)
                 Jac[i, j] = coeffs[i] / w_sum * (δ_ij(i, j) - scales[i] * coeffs[j] / w_sum)
 
         Σw = Jac @ Σs @ Jac.T
