@@ -565,7 +565,6 @@ class PowderPattern(PowderPattern_objcryst):
         """
         res = {}
         szmv_sum = 0
-        pdiffs = []
         for pdiff in self.get_crystalline_components():
             s = self.GetScaleFactor(pdiff)
             c = pdiff.GetCrystal()
@@ -575,7 +574,6 @@ class PowderPattern(PowderPattern_objcryst):
             # print("%25s: %12f, %10f, %3d, %10.2f" % (c.GetName(), s, m, z, v))
             res[pdiff] = s * z * m * v
             szmv_sum += s * z * m * v
-            pdiffs.append(pdiff)
 
         if verbose:
             print("Weight percentages:")
