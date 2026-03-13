@@ -54,7 +54,8 @@ void wrap_powderpatterndiffraction()
                  bp::arg("fwhmCagliotiW")=1e-6,
                  bp::arg("fwhmCagliotiU")=0,
                  bp::arg("fwhmCagliotiV")=0,
-                 bp::arg("eta0")=0.5, bp::arg("eta1")=0))
+                 bp::arg("eta0")=0.5, bp::arg("eta1")=0,
+                 bp::arg("scherrerP")=0))
         .def("GetProfile",
                 (ReflectionProfile& (PowderPatternDiffraction::*)())
                 &PowderPatternDiffraction::GetProfile,
