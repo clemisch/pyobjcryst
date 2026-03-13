@@ -595,10 +595,9 @@ class PowderPattern(PowderPattern_objcryst):
         pattern including error propagation from phase scale covariance
         matrix. 
 
-        :param lsq: LSQ object used to perform error propagation 
-            using covariance map.
-        :return: a dictionary with the PowderPatternDiffraction Crystal name
-            as key, and the weight ratios and sigmas as value.
+        :param lsq: LSQ object used to perform error propagation using covariance map.
+        :return: a dictionary with the PowderPatternDiffraction Crystal name as key, 
+                 and the weight ratios and sigmas as value.
         """
         pdiffs = self.get_crystalline_components()
         N = len(pdiffs)
@@ -621,7 +620,6 @@ class PowderPattern(PowderPattern_objcryst):
         for i in range(N):
             for j in range(N):
                 # TODO: I'm not 100% sure indices i always correspond to number of '~'
-                # Σs[i, j] = Σs_dict[("Scale_" + "~"*i, "Scale_" + "~"*j)]
                 Σs[i, j] = Σs_dict.get(("Scale_" + "~"*i, "Scale_" + "~"*j), 0.)
                 Jac[i, j] = coeffs[i] / w_sum * (δ_ij(i, j) - scales[i] * coeffs[j] / w_sum)
 
