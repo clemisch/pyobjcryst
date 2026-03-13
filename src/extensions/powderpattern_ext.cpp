@@ -258,6 +258,11 @@ void wrap_powderpattern()
                 (void (PowderPattern::*) (const string&, const REAL))
                 &PowderPattern::SetWavelength,
                 (bp::arg("XRayTubeElementName"), bp::arg("alpha2Alpha2ratio")=0.5))
+        .def("Set2ThetaFlatDetDispRatio",
+                &PowderPattern::Set2ThetaFlatDetDispRatio,
+                bp::arg("ratio"))
+        .def("Get2ThetaFlatDetDispRatio",
+                &PowderPattern::Get2ThetaFlatDetDispRatio)
         .def("SetEnergy",
                 &DiffractionDataSingleCrystal::SetEnergy,
                 bp::arg("nrj_kev"))
@@ -340,6 +345,9 @@ void wrap_powderpattern()
         .add_property("llk", &PowderPattern::GetLogLikelihood)
         .add_property("wavelength", &PowderPattern::GetWavelength,
                       (void (PowderPattern::*)(double)) &PowderPattern::SetWavelength)
+        .add_property("twotheta_flat_det_disp_ratio",
+                      &PowderPattern::Get2ThetaFlatDetDispRatio,
+                      &PowderPattern::Set2ThetaFlatDetDispRatio)
         ;
 
     class_<SPGScore>("SPGScore", init<const string &, const REAL, const REAL,
