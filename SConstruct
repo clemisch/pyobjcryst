@@ -42,6 +42,10 @@ def ftpyflag(flags):
     pattern = re.compile(r'^(-g|-Wstrict-prototypes|-O\d|-fPIC)$')
     return [f for f in flags if not (isinstance(f, str) and pattern.match(f))]
 
+
+def filter_warning_flags(flags):
+    return [f for f in flags if not (isinstance(f, str) and f.startswith('-W'))]
+
 # copy system environment variables related to compilation
 DefaultEnvironment(ENV=subdictionary(os.environ, '''
     PATH PYTHONPATH GIT_DIR HOMEPATH HOMEDRIVE
@@ -68,6 +72,10 @@ vars.Add(EnumVariable(
     'build',
     'compiler settings',
     'fast', allowed_values=('debug', 'fast')))
+vars.Add(EnumVariable(
+    'warnings',
+    'warning flags policy',
+    'all', allowed_values=('all', 'none', 'default')))
 vars.Add(EnumVariable(
     'tool',
     'C++ compiler toolkit to be used',
@@ -172,8 +180,13 @@ else:
     # not using sysconfig here because of parsing issues
     env.ParseConfig(f"{pythonconfig} --cflags")
     env.Replace(CCFLAGS=ftpyflag(env['CCFLAGS']))
+    if env['warnings'] != 'all':
+        env.Replace(CCFLAGS=filter_warning_flags(env['CCFLAGS']))
 
-    env.PrependUnique(CCFLAGS=['-Wextra'])
+    if env['warnings'] == 'all':
+        env.PrependUnique(CCFLAGS=['-Wextra'])
+    elif env['warnings'] == 'none':
+        env.PrependUnique(CCFLAGS=['-w'])
     env.PrependUnique(CXXFLAGS=['-std=c++11'])
 
     if env['tool'] == 'intelc':
