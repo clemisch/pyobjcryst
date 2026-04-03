@@ -15,7 +15,7 @@ Copyright (c) 2008-2012, The Trustees of Columbia University in the City of New 
 
 Copyright (c) 2014-2019, Brookhaven Science Associates, Brookhaven National Laboratory
 
-Copyright (c) 2024-2026, The Trustees of Columbia University in the City of New York.
+Copyright (c) 2024-Present, The Trustees of Columbia University in the City of New York.
 All rights reserved.
 
 The "DiffPy-CMI" is distributed subject to the following license conditions:
