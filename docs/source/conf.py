@@ -74,6 +74,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_rtd_theme",
     "sphinx_copybutton",
+    "nbsphinx",
     "m2r2",
 ]
 

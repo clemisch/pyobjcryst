@@ -7,6 +7,7 @@ exclude =
     build,
     dist,
     docs/source/conf.py
+# huge loops in crystal.py
 max-line-length = 99
 # Ignore some style 'errors' produced while formatting by 'black'
 # https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#labels-why-pycodestyle-warnings
