@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# (c) 2025 The Trustees of Columbia University in the City of New York.
+# (c) 2025-2026 The Trustees of Columbia University in the City of New York.
 # All rights reserved.
 #
 # File coded by: Billinge Group members.
@@ -18,8 +18,9 @@
 #  __all__ = ["__date__", "__git_commit__", "__timestamp__", "__version__"]
 
 # obtain version information
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 
-__version__ = version("pyobjcryst")
-
-# End of file
+try:
+    __version__ = version("pyobjcryst")
+except PackageNotFoundError:
+    __version__ = "unknown"

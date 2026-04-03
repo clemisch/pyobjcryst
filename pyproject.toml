@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=62.0", "setuptools-git-versioning>=2.0", "numpy"]
+requires = ["setuptools>=62.0", "setuptools-git-versioning>=2.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,7 +11,7 @@ authors = [
   { name="Vincent-Favre-Nicolin", email="favre@esrf.fr" },
 ]
 maintainers = [
-  { name="Simon J.L. Billinge group", email="sb2896@columbia.edu" },
+  {name='Simon Billinge', email='sbillinge@ucsb.edu'},
   { name="Vincent-Favre-Nicolin", email="favre@esrf.fr" },
 ]
 description = "Python bindings to the ObjCryst++ library."
@@ -56,6 +56,9 @@ where = ["src"]  # list of folders that contain the packages (["."] by default)
 include = ["*"]  # package names should match these glob patterns (["*"] by default)
 exclude = []  # exclude packages matching these glob patterns (empty by default)
 namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
+
+[project.scripts]
+pyobjcryst = "pyobjcryst.pyobjcryst_app:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements/pip.txt"]}
