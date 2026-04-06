@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 ##############################################################################
 #
-# (c) 2025-Present The Trustees of Columbia University in the City of New York.
+# (c) 2025 The Trustees of Columbia University in the City of New York.
+# (c) 2025-Present, pyobjcryst contributors.
 # All rights reserved.
 #
 # File coded by: Billinge Group members.
