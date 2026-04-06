@@ -4,14 +4,15 @@ LICENSE
 This program is part of the DiffPy and DANSE open-source projects
 and is available subject to the conditions and terms laid out below.
 
-Copyright (c) 2009-2012, The Trustees of Columbia University in
-the City of New York.  All rights reserved.
+Copyright (c) 2009-2019, The Trustees of Columbia University in
+the City of New York.
+Copyright (c) 2025-Present, pyobjcryst contributors. All rights reserved.
 
 For more information please visit the project web-page:
 
     http://www.diffpy.org/
 
-or email Prof. Simon Billinge at sb2896@columbia.edu
+or email Prof. Simon Billinge at sbillinge@ucsb.edu
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions

@@ -6,7 +6,7 @@ exclude =
     __pycache__,
     build,
     dist,
-    doc/source/conf.py
+    docs/source/conf.py
 # huge loops in crystal.py
 max-line-length = 99
 # Ignore some style 'errors' produced while formatting by 'black'
