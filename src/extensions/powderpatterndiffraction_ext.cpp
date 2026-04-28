@@ -76,5 +76,8 @@ void wrap_powderpatterndiffraction()
                 &PowderPatternDiffraction::GetNbReflBelowMaxSinThetaOvLambda)
         .def("GetFhklObsSq", &PowderPatternDiffraction::GetFhklObsSq,
                 return_value_policy<copy_const_reference>())
+        .add_property("twotheta_flat_det_disp_ratio_phase",
+                &PowderPatternDiffraction::Get2ThetaPhaseFlatDetDispRatio,
+                &PowderPatternDiffraction::Set2ThetaPhaseFlatDetDispRatio)
         ;
 }

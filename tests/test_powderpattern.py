@@ -310,7 +310,31 @@ class TestPowderPatternBackground(unittest.TestCase):
 
 
 class TestPowderPatternDiffraction(unittest.TestCase):
-    pass
+    @pytest.fixture(autouse=True)
+    def prepare_fixture(self, loadcifdata):
+        self.loadcifdata = loadcifdata
+
+    def test_twotheta_flat_det_disp_ratio_phase(self):
+        c = self.loadcifdata("paracetamol.cif")
+        p = PowderPattern()
+        p.SetWavelength(0.7)
+        x = np.linspace(0, 40, 4001)
+        p.SetPowderPatternX(np.deg2rad(x))
+        p.SetPowderPatternObs(np.ones_like(x))
+        pd = p.AddPowderPatternDiffraction(c)
+        pd.SetReflectionProfilePar(
+            ReflectionProfileType.PROFILE_PSEUDO_VOIGT, 1e-6
+        )
+
+        self.assertEqual(pd.twotheta_flat_det_disp_ratio_phase, 0)
+
+        calc0 = np.array(p.GetPowderPatternCalc(), copy=True)
+        pd.twotheta_flat_det_disp_ratio_phase = 1e-3
+        self.assertAlmostEqual(pd.twotheta_flat_det_disp_ratio_phase, 1e-3)
+
+        calc1 = np.array(p.GetPowderPatternCalc(), copy=True)
+        self.assertFalse(np.array_equal(calc0, calc1))
+
     # def test___init__(self):  assert False
     # def test_ExtractLeBail(self):  assert False
     # def test_GetExtractionMode(self):  assert False
