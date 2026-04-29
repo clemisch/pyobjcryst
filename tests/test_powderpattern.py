@@ -329,11 +329,17 @@ class TestPowderPatternDiffraction(unittest.TestCase):
         self.assertEqual(pd.twotheta_flat_det_disp_ratio_phase, 0)
 
         calc0 = np.array(p.GetPowderPatternCalc(), copy=True)
+        p.twotheta_flat_det_disp_ratio = 2e-3
         pd.twotheta_flat_det_disp_ratio_phase = 1e-3
         self.assertAlmostEqual(pd.twotheta_flat_det_disp_ratio_phase, 1e-3)
 
         calc1 = np.array(p.GetPowderPatternCalc(), copy=True)
         self.assertFalse(np.array_equal(calc0, calc1))
+
+        pd.twotheta_flat_det_disp_ratio_phase = 0
+        p.twotheta_flat_det_disp_ratio = 3e-3
+        calc2 = np.array(p.GetPowderPatternCalc(), copy=True)
+        self.assertTrue(np.allclose(calc1, calc2))
 
     # def test___init__(self):  assert False
     # def test_ExtractLeBail(self):  assert False
