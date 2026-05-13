@@ -85,6 +85,11 @@ RefinablePar& _GetParNotFixedLong(RefinableObj& obj, const long i)
     return obj.GetParNotFixed(i);
 }
 
+void _EraseAllParamSet(RefinableObj& obj)
+{
+    obj.EraseAllParamSet();
+}
+
 
 class RefinableObjWrap : public RefinableObj,
                  public wrapper<RefinableObj>
@@ -101,11 +106,6 @@ class RefinableObjWrap : public RefinableObj,
     RefinableObjWrap(const bool internal) : RefinableObj(internal)
     {
         RefinableObj::SetDeleteRefParInDestructor(false);
-    }
-
-    // Fix for const void issue
-    void EraseAllParamSet() {
-        this->RefinableObj::EraseAllParamSet();
     }
 
     const std::string& default_GetClassName() const
@@ -484,7 +484,7 @@ void wrap_refinableobj()
             return_value_policy<copy_const_reference>())
         .def("GetParamSet_ParNotFixedHumanValue",
             &RefinableObj::GetParamSet_ParNotFixedHumanValue)
-        .def("EraseAllParamSet", &RefinableObjWrap::EraseAllParamSet)
+        .def("EraseAllParamSet", &_EraseAllParamSet)
         .def("GetParamSetName", &RefinableObj::GetParamSetName,
             return_value_policy<copy_const_reference>())
         .def("SetLimitsAbsolute", ( void (RefinableObj::*)
