@@ -314,6 +314,19 @@ class TestPowderPatternDiffraction(unittest.TestCase):
     def prepare_fixture(self, loadcifdata):
         self.loadcifdata = loadcifdata
 
+    def _make_powder_pattern_diffraction(self):
+        c = self.loadcifdata("paracetamol.cif")
+        p = PowderPattern()
+        p.SetWavelength(0.7)
+        x = np.linspace(0, 40, 4001)
+        p.SetPowderPatternX(np.deg2rad(x))
+        p.SetPowderPatternObs(np.ones_like(x))
+        pd = p.AddPowderPatternDiffraction(c)
+        pd.SetReflectionProfilePar(
+            ReflectionProfileType.PROFILE_PSEUDO_VOIGT, 1e-6
+        )
+        return p, pd
+
     def test_twotheta_flat_det_disp_ratio_phase(self):
         c = self.loadcifdata("paracetamol.cif")
         p = PowderPattern()
@@ -340,6 +353,25 @@ class TestPowderPatternDiffraction(unittest.TestCase):
         p.twotheta_flat_det_disp_ratio = 3e-3
         calc2 = np.array(p.GetPowderPatternCalc(), copy=True)
         self.assertTrue(np.allclose(calc1, calc2))
+
+    def test_SetFhklObsSq(self):
+        p, pd = self._make_powder_pattern_diffraction()
+        pd.SetExtractionMode(extract=True, init=True)
+        pd.ExtractLeBail(1)
+        f2 = np.array(pd.GetFhklObsSq(), copy=True)
+
+        new_p, new_pd = self._make_powder_pattern_diffraction()
+        new_pd.SetExtractionMode(extract=True, init=True)
+        new_pd.SetFhklObsSq(f2)
+        self.assertTrue(np.allclose(new_pd.GetFhklObsSq(), f2))
+
+        list_p, list_pd = self._make_powder_pattern_diffraction()
+        list_pd.SetExtractionMode(extract=True, init=True)
+        list_pd.SetFhklObsSq(f2.tolist())
+        self.assertTrue(np.allclose(list_pd.GetFhklObsSq(), f2))
+
+        with self.assertRaises(ObjCrystException):
+            new_pd.SetFhklObsSq(f2[:-1])
 
     # def test___init__(self):  assert False
     # def test_ExtractLeBail(self):  assert False

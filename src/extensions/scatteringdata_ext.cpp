@@ -29,6 +29,8 @@
 #include <ObjCryst/ObjCryst/ScatteringData.h>
 #include <ObjCryst/CrystVector/CrystVector.h>
 
+#include "helpers.hpp"
+
 namespace bp = boost::python;
 using namespace boost::python;
 using namespace ObjCryst;
@@ -67,6 +69,13 @@ bp::dict _GetScatteringFactor(ScatteringData& data)
         d[key] = pos->second;
     }
     return d;
+}
+
+void _SetFhklObsSq(ScatteringData& data, bp::object obs)
+{
+    CrystVector_REAL vobs;
+    assignCrystVector(vobs, obs);
+    data.SetFhklObsSq(vobs);
 }
 
 
@@ -139,6 +148,7 @@ void wrap_scatteringdata()
                 return_value_policy<copy_const_reference>())
         .def("GetFhklObsSq", &ScatteringData::GetFhklObsSq,
                 return_value_policy<copy_const_reference>())
+        .def("SetFhklObsSq", &_SetFhklObsSq, bp::arg("obs"))
         //.def("GetScatteringFactor",
         //     (const std::map< const ScatteringPower *, CrystVector_REAL > &
         //     (ScatteringData::*)()) &ScatteringData::GetScatteringFactor,

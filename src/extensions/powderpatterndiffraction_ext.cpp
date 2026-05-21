@@ -26,10 +26,22 @@
 #include <ObjCryst/ObjCryst/General.h>
 #include <ObjCryst/ObjCryst/PowderPattern.h>
 
+#include "helpers.hpp"
+
 namespace bp = boost::python;
 using namespace boost::python;
 using namespace ObjCryst;
 
+namespace {
+
+void _SetFhklObsSq(PowderPatternDiffraction& data, bp::object obs)
+{
+    CrystVector_REAL vobs;
+    assignCrystVector(vobs, obs);
+    data.SetFhklObsSq(vobs);
+}
+
+}   // anonymous namespace
 
 void wrap_powderpatterndiffraction()
 {
@@ -76,6 +88,7 @@ void wrap_powderpatterndiffraction()
                 &PowderPatternDiffraction::GetNbReflBelowMaxSinThetaOvLambda)
         .def("GetFhklObsSq", &PowderPatternDiffraction::GetFhklObsSq,
                 return_value_policy<copy_const_reference>())
+        .def("SetFhklObsSq", &_SetFhklObsSq, bp::arg("obs"))
         .add_property("twotheta_flat_det_disp_ratio_phase",
                 &PowderPatternDiffraction::Get2ThetaPhaseFlatDetDispRatio,
                 &PowderPatternDiffraction::Set2ThetaPhaseFlatDetDispRatio)
