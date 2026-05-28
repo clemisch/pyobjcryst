@@ -89,6 +89,7 @@ void wrap_powderpatterndiffraction()
         .def("GetFhklObsSq", &PowderPatternDiffraction::GetFhklObsSq,
                 return_value_policy<copy_const_reference>())
         .def("SetFhklObsSq", &_SetFhklObsSq, bp::arg("obs"))
+        .def("X2XCorrPhase", &PowderPatternDiffraction::X2XCorrPhase)
         .add_property("twotheta_flat_det_disp_ratio_phase",
                 &PowderPatternDiffraction::Get2ThetaPhaseFlatDetDispRatio,
                 &PowderPatternDiffraction::Set2ThetaPhaseFlatDetDispRatio)
