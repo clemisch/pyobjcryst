@@ -84,5 +84,8 @@ void wrap_reflectionprofile()
         .def("CreateCopy",
                 pure_virtual(&ReflectionProfile::CreateCopy),
                 return_value_policy<manage_new_object>())
+        .add_property("microstrain_ppm",
+                &ReflectionProfile::GetMicrostrainPpm,
+                &ReflectionProfile::SetMicrostrainPpm)
         ;
 }

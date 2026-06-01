@@ -217,6 +217,20 @@ class TestPowderPattern(unittest.TestCase):
             ruc.DirectUnitCell()[-1], c.GetVolume(), delta=5
         )
 
+    def test_profile_microstrain_ppm(self):
+        c = self.loadcifdata("paracetamol.cif")
+        p = PowderPattern()
+        pd = p.AddPowderPatternDiffraction(c)
+        pd.SetReflectionProfilePar(
+            ReflectionProfileType.PROFILE_PSEUDO_VOIGT,
+            1e-6,
+            microstrain_ppm=1200,
+        )
+        profile = pd.GetProfile()
+        self.assertEqual(profile.microstrain_ppm, 1200)
+        profile.microstrain_ppm = 750
+        self.assertEqual(profile.microstrain_ppm, 750)
+
     def test_spacegroup_explorer(self):
         c = self.loadcifdata("paracetamol.cif")
         p = PowderPattern()
