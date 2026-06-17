@@ -115,6 +115,14 @@ PowderPatternBackground& addppbackground(PowderPattern& pp)
 }
 
 
+PowderPatternBackgroundHist& addppbackgroundhist(PowderPattern& pp)
+{
+    PowderPatternBackgroundHist* ppc = new PowderPatternBackgroundHist();
+    pp.AddPowderPatternComponent(*ppc);
+    return *ppc;
+}
+
+
 PowderPatternDiffraction& addppdiffraction(PowderPattern& pp, Crystal& crst)
 {
     PowderPatternDiffraction* ppc = new PowderPatternDiffraction();
@@ -202,6 +210,9 @@ void wrap_powderpattern()
     class_<PowderPatternWrap, bases<RefinableObj> >("PowderPattern")
         .def("AddPowderPatternBackground",
                 &addppbackground,
+                return_internal_reference<>())
+        .def("AddPowderPatternBackgroundHist",
+                &addppbackgroundhist,
                 return_internal_reference<>())
         .def("AddPowderPatternDiffraction",
                 &addppdiffraction,

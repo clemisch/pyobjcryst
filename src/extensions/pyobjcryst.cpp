@@ -42,6 +42,7 @@ void wrap_objregistry();
 void wrap_polyhedron();
 void wrap_powderpattern();
 void wrap_powderpatternbackground();
+void wrap_powderpatternbackgroundhist();
 void wrap_powderpatterncomponent();
 void wrap_powderpatterndiffraction();
 void wrap_quaternion();
@@ -126,6 +127,7 @@ BOOST_PYTHON_MODULE(_pyobjcryst)
     wrap_polyhedron();
     wrap_powderpattern();
     wrap_powderpatternbackground();
+    wrap_powderpatternbackgroundhist();
     wrap_powderpatterndiffraction();
     wrap_radiation();
     wrap_rigidgroup();
