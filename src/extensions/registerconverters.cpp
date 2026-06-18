@@ -61,7 +61,7 @@ PyObject* makeNdArray(const double* data, std::vector<npy_intp>& dims)
     PyArrayObject* a = reinterpret_cast<PyArrayObject*>(pyarray);
     double* adata = static_cast<double*>(PyArray_DATA(a));
     std::copy(data, data + PyArray_SIZE(a), adata);
-    return bp::incref(pyarray);
+    return pyarray;
 }
 
 // CrystVector to ndarray
