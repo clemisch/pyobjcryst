@@ -57,6 +57,22 @@ bp::list _GetRwHistory(const LSQNumObj & lsq)
     return out;
 }
 
+// Full design-matrix derivatives (the path used by Refine when
+// SetUseLSQFullDeriv(true)), returned as {par_name: ndarray} for the current
+// set of non-fixed parameters. Mainly for validating against GetLSQDeriv().
+bp::dict _GetLSQFullDeriv(LSQNumObj & lsq)
+{
+    const std::map<RefinablePar*, CrystVector_REAL> & m = lsq.GetLSQ_FullDeriv();
+    bp::dict d;
+    for (std::map<RefinablePar*, CrystVector_REAL>::const_iterator it = m.begin();
+         it != m.end(); ++it)
+    {
+        if (it->first == 0) continue;
+        d[it->first->GetName()] = it->second;   // CrystVector_REAL -> ndarray
+    }
+    return d;
+}
+
 bp::dict _GetVarianceCovarianceMap(LSQNumObj & lsq)
 {
     const std::map<std::pair<const RefinablePar*, const RefinablePar*>, REAL> &m =
@@ -111,6 +127,10 @@ void wrap_lsq()
         .def("Rfactor", &LSQNumObj::Rfactor)
         .def("RwFactor", &LSQNumObj::RwFactor)
         .def("GetRwHistory", &_GetRwHistory)
+        .def("GetLSQFullDeriv", &_GetLSQFullDeriv)
+        .def("SetUseLSQFullDeriv", &LSQNumObj::SetUseLSQFullDeriv,
+                (bp::arg("useFullDeriv")=true))
+        .def("GetUseLSQFullDeriv", &LSQNumObj::GetUseLSQFullDeriv)
         .def("ChiSquare", &LSQNumObj::ChiSquare)
         .def("SetRefinedObj", &LSQNumObj::SetRefinedObj,
                 (bp::arg("obj"), bp::arg("LSQFuncIndex")=0,
