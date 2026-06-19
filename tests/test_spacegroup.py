@@ -14,7 +14,6 @@
 ##############################################################################
 """Unit tests for pyobjcryst.spacegroup."""
 
-
 import unittest
 
 from pyobjcryst.spacegroup import SpaceGroup

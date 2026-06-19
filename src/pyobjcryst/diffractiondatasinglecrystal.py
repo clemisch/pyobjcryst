@@ -36,9 +36,9 @@ from pyobjcryst._pyobjcryst import (
 
 
 def create_singlecrystaldata_from_cif(file, crystal):
-    """
-    Create a DiffractionDataSingleCrystal object from a CIF file. Note that
-    this will use the last created Crystal as a reference structure.
+    """Create a DiffractionDataSingleCrystal object from a CIF file.
+
+    Note that this will use the last created Crystal as a reference structure.
     Example using the COD to load both crystal and data:
         c=create_crystal_from_cif('http://www.crystallography.net/cod/2201530.cif')
         d=create_singlecrystaldata_from_cif('http://www.crystallography.net/cod/2201530.hkl', c)

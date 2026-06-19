@@ -40,7 +40,9 @@ from urllib.request import urlopen
 
 import numpy as np
 
-from pyobjcryst._pyobjcryst import BumpMergePar
+from pyobjcryst._pyobjcryst import (
+    BumpMergePar,
+)
 from pyobjcryst._pyobjcryst import (
     CreateCrystalFromCIF as CreateCrystalFromCIF_orig,
 )
@@ -277,7 +279,6 @@ class Crystal(Crystal_orig):
             independent atoms, no symmetry or translation is applied
         :return : the list of atoms and bonds to be displayed for 3dmol
         """
-
         spg = self.GetSpaceGroup()
         vv = []
         idx = 0

@@ -165,7 +165,6 @@ class TestMolecule(unittest.TestCase):
 
     def testBonds(self):
         """Test the Bond methods."""
-
         a1 = self.m.GetAtom(0)
         a2 = self.m.GetAtom(1)
         a3 = self.m.GetAtom(2)
@@ -746,7 +745,6 @@ class TestStretchModeBondLength(unittest.TestCase):
 
     def testStretchModeBondLength(self):
         """Test the StretchModeBondLength class."""
-
         # Measure the distance
         ac = self.m[0]
         # The 0, 0, z atom
@@ -795,7 +793,6 @@ class TestStretchModeBondAngle(unittest.TestCase):
 
     def testStretchModeBondAngle(self):
         """Test the StretchModeBondLength class."""
-
         a1 = self.m[1]
         ac = self.m[0]
         a2 = self.m[2]
@@ -839,7 +836,6 @@ class TestStretchModeTorsion(unittest.TestCase):
 
     def testStretchModeTorsion(self):
         """Test the StretchModeBondLength class."""
-
         a1 = self.m[1]
         ac0 = self.m[3]
         ac1 = self.m[0]

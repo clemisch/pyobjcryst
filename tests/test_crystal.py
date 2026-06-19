@@ -141,7 +141,6 @@ class TestCrystal(unittest.TestCase):
 
     def testEmbedding(self):
         """Test integrity of mutually-embedded objects."""
-
         c = makeCrystal(*makeScatterer())
 
         class Level1(object):
