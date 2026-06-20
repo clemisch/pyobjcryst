@@ -126,8 +126,9 @@ from .zscatterer import ZScatterer
 
 
 def ImportFenskeHallZMatrix(cryst, src, named=False):
-    """Create a Molecule from a Fenske-Hall z-matrix. This is cleaner
-    than importing the Z-matrix into a ZScatterer object and then using
+    """Create a Molecule from a Fenske-Hall z-matrix.
+
+    This is cleaner than importing the Z-matrix into a ZScatterer object and then using
     ZScatterer2Molecule, as it takes care of keeping only the created
     Molecule inside the Crystal.
 

@@ -16,6 +16,7 @@ See the online ObjCryst++ documentation (https://objcryst.readthedocs.io).
 Changes from ObjCryst::MonteCarloObj::
         In development !
 """
+
 __all__ = ["MonteCarlo", "AnnealingSchedule", "GlobalOptimType"]
 
 import warnings

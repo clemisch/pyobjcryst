@@ -32,7 +32,9 @@ __all__ = [
     "SpaceGroupExplorer",
 ]
 
-from pyobjcryst._pyobjcryst import LSQ
+from pyobjcryst._pyobjcryst import (
+    LSQ,
+)
 from pyobjcryst._pyobjcryst import (
     CreatePowderPatternFromCIF as CreatePowderPatternFromCIF_orig,
 )
@@ -338,11 +340,11 @@ class PowderPattern(PowderPattern_objcryst):
 
     @property
     def figure(self):
-        """
-        return: the figure used for plotting, or None. Note that
-            if you want to display it in a notebook using ipympl (aka
-            'matplotlib widget'), you should 'figure.canvas' to display
-            also the toolbar (zoom, etc...).
+        """Return: the figure used for plotting, or None.
+
+        Note that if you want to display it in a notebook using ipympl
+        (aka 'matplotlib widget'), you should 'figure.canvas' to display
+        also the toolbar (zoom, etc...).
         """
         return self._plot_fig
 

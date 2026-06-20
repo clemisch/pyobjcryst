@@ -14,7 +14,6 @@
 ##############################################################################
 """Utilities for crystals."""
 
-
 # FIXME: check if this function does any meaningful job.
 
 
@@ -95,7 +94,6 @@ def putAtomsInMolecule(crystal, alist=None, name=None):
 def _xyztostring(crystal):
     """Helper function to write xyz coordinates of a crystal to a
     string."""
-
     nsc = 0
     out = ""
     scl = crystal.GetScatteringComponentList()
