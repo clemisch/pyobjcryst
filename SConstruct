@@ -75,7 +75,10 @@ vars.Add(EnumVariable(
 vars.Add(EnumVariable(
     'warnings',
     'warning flags policy',
-    'all', allowed_values=('all', 'none', 'default')))
+    'none', allowed_values=('all', 'none', 'default')))
+vars.Add(BoolVariable(
+    'verbose',
+    'print build commands', False))
 vars.Add(EnumVariable(
     'tool',
     'C++ compiler toolkit to be used',
@@ -84,6 +87,8 @@ vars.Add(BoolVariable(
     'profile',
     'build with profiling information', False))
 vars.Update(env)
+SetOption('silent', not env['verbose'])
+SetOption('no_progress', not env['verbose'])
 
 # Use C++ compiler specified by the 'tool' option.
 if env['tool'] == 'intelc':
@@ -157,7 +162,8 @@ else:
     # use sysconfig on Windows
     pythonconfig = None
     xpython = pjoin(env['prefix'], 'python.exe')
-print(f"Using python-config: {pythonconfig} from {xpython}")
+if env['verbose']:
+    print(f"Using python-config: {pythonconfig} from {xpython}")
 
 
 common_cppdefs = ['REAL=double', 'BOOST_ERROR_CODE_HEADER_ONLY']
@@ -166,6 +172,8 @@ env.AppendUnique(CPPDEFINES=common_cppdefs)
 if env['PLATFORM'] == 'win32':
     env.AppendUnique(CPPDEFINES=['BOOST_ALL_NO_LIB'])
     env.AppendUnique(CCFLAGS=['/EHsc', '/MD'])
+    if env['warnings'] == 'none':
+        env.PrependUnique(CCFLAGS=['/w'])
 
     if env['build'] == 'debug':
         env.Append(CCFLAGS=['/Zi', '/Od', '/FS'])
@@ -187,11 +195,21 @@ else:
         env.PrependUnique(CCFLAGS=['-Wextra'])
     elif env['warnings'] == 'none':
         env.PrependUnique(CCFLAGS=['-w'])
+        env.PrependUnique(LINKFLAGS=['-w'])
+        # GCC emits an unconditional warning when LTO objects are linked
+        # without an explicit parallelization mode.
+        if ('-flto' in env['CCFLAGS'] and
+                any(isinstance(f, str) and
+                    f.startswith('-flto-partition=')
+                    for f in env['CCFLAGS'])):
+            env.PrependUnique(LINKFLAGS=['-flto=auto'])
     env.PrependUnique(CXXFLAGS=['-std=c++11'])
 
     if env['tool'] == 'intelc':
         # options for Intel C++ compiler on hpc dev-intel07
-        env.AppendUnique(CCFLAGS=['-w1', '-fp-model', 'precise'])
+        if env['warnings'] != 'none':
+            env.AppendUnique(CCFLAGS=['-w1'])
+        env.AppendUnique(CCFLAGS=['-fp-model', 'precise'])
         env.PrependUnique(LIBS=['imf'])
         fast_opts = ['-fast', '-no-ipo']
     else:
