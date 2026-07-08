@@ -328,5 +328,166 @@ class TestCellRefinementWithAnalyticDerivatives(_ObjCrystTestCase):
         self.assertLess(ang_err, 1e-2, msg=f"cell angle error {ang_err:.2e} rad")
 
 
+# --- Every-parameter sweep --------------------------------------------------
+#
+# The flat-detector bug (a parameter whose analytic derivative was silently 0,
+# so the least-squares deactivated it) slipped through because the earlier tests
+# only checked a hand-picked list of parameters -- the same list I had in mind
+# when writing the implementation, so the test shared the implementation's blind
+# spot. This test instead enumerates *every* refinable parameter of a
+# representative model and checks each one, so any parameter whose derivative is
+# silently wrong or zero is caught automatically -- independent of my
+# assumptions about which parameters matter.
+#
+# GetLSQDeriv uses the analytic derivative only for the parameters implemented
+# here (profile shape, unit cell, peak-position corrections) and falls back to a
+# numerical derivative for everything else (structure factor: atom positions,
+# Biso, occupancy; absorption; scale factor; ...). Both must agree with a finite
+# difference of the pattern; the key invariant is that no parameter which
+# actually affects the pattern may have an identically-zero analytic derivative.
+
+# Sensible, in-range, non-limit values for every parameter of the model built in
+# _build_full_model(). Values are kept away from parameter limits so the central
+# finite difference is not clamped.
+_SWEEP_VALUES = {
+    # NB: the six unit-cell parameters are intentionally NOT set here - they are
+    # already given sensible values (in radians for the angles) by
+    # _build_full_model(). Setting an angle here via SetValue() would interpret
+    # e.g. 85 as 85 radians and produce a degenerate cell.
+    # atom (occupancy kept below its upper limit of 1)
+    "x": 0.11, "y": 0.22, "z": 0.33, "Ni1occup": 0.8,
+    # scattering power
+    "Biso": 0.5, "ML Error": 0.2, "ML-Nb Ghost Atoms": 1.0, "Formal Charge": 0.0,
+    # powder-pattern corrections & scale. The flat-detector dispersion ratios
+    # are left at 0: their derivative there is still non-zero (so the sweep still
+    # guards against the "silently deactivated" regression), while a non-zero
+    # value would shift every peak and add finite-difference noise to the sharp
+    # profile derivatives. Non-zero flat-det values are validated separately in
+    # test_flatdet_derivative_at_nonzero_value.
+    "Zero": 0.002, "2ThetaDispl": 0.001, "2ThetaTransp": 0.0005,
+    "MuR": 0.3, "Scale_": 1.0,
+    # diffraction phase
+    "Global Biso": 0.3,
+    # profile
+    "U": 5e-5, "V": -3e-5, "W": 1.2e-4, "P": 1e-5, "MicrostrainPPM": 300.0,
+    "Eta0": 0.4, "Eta1": 0.05, "Asym0": 1.2, "Asym1": 0.1, "Asym2": 0.02,
+    # DIFC/DIFA are TOF-only; for the monochromatic model here they have no effect
+    "DIFC": 48277.0, "DIFA": -6.7,
+}
+
+
+def _build_full_model():
+    """Build a triclinic model exercising every kind of refinable parameter."""
+    cr = Crystal(5.0, 6.0, 7.0, 85 * D2R, 95 * D2R, 100 * D2R, "P-1")
+    sp = ScatteringPowerAtom("Ni", "Ni")
+    sp.SetBiso(0.5)
+    cr.AddScatteringPower(sp)
+    atom = Atom(0.11, 0.22, 0.33, "Ni1", sp)
+    cr.AddScatterer(atom)
+    pp = PowderPattern()
+    pp.SetWavelength(1.0)
+    npts = 4000
+    pp.SetPowderPatternPar(14 * D2R, 0.02 * D2R, npts)
+    diff = pp.AddPowderPatternDiffraction(cr)
+    prof = diff.GetProfile()
+    pp.SetPowderPatternObs(np.ones(npts))
+    return cr, sp, atom, pp, diff, prof
+
+
+class TestAllParametersDerivative(_ObjCrystTestCase):
+    """Enumerate every refinable parameter and check its LSQ derivative."""
+
+    # Coarse tolerance: this test is a "nothing is silently broken" guard (it
+    # must catch a zero or a factor-of-2 error); the tight (1e-8) validation of
+    # the in-scope parameters lives in the other test classes.
+    TOL = 5e-2
+
+    def test_every_parameter_derivative(self):
+        cr, sp, atom, pp, diff, prof = _build_full_model()
+
+        # Set every parameter to its sensible value and free it, so that it is
+        # both exercised and mutatable for the finite difference.
+        objects = [cr, sp, atom, pp, diff, prof]
+        for obj in objects:
+            for i in range(obj.GetNbPar()):
+                par = obj.GetPar(i)
+                if not par.IsUsed():
+                    continue
+                if par.GetName() in _SWEEP_VALUES:
+                    par.SetValue(_SWEEP_VALUES[par.GetName()])
+                par.SetIsFixed(False)
+        pp.GetPowderPatternCalc()
+        y = np.array(pp.GetPowderPatternCalc())
+
+        seen = set()
+        n_checked = 0
+        for obj in objects:
+            is_cell = obj is cr  # the crystal's own parameters are the 6 cell ones
+            for i in range(obj.GetNbPar()):
+                par = obj.GetPar(i)
+                name = par.GetName()
+                if name in seen or not par.IsUsed():
+                    continue
+                seen.add(name)
+                with self.subTest(parameter=name):
+                    self._check_one(pp, par, name, y, is_cell)
+                    n_checked += 1
+        # Guard against the model silently losing parameters (which would make
+        # this sweep vacuous).
+        self.assertGreaterEqual(n_checked, 25)
+
+    def _check_one(self, pp, par, name, y, is_cell):
+        v0 = par.GetValue()
+        # Use a tuned finite-difference step where we have one (profile widths in
+        # particular have tiny values, for which a relative step would be pure
+        # rounding noise); otherwise a relative step is fine.
+        step = STEP.get(name, max(abs(v0) * 1e-5, 1e-7))
+        da = np.array(pp.GetLSQDeriv(0, par))
+        n = len(da)
+        dn1 = _ndiff(pp, par, step)[:n]
+        dn2 = _ndiff(pp, par, step * 4)[:n]
+        m = _robust_mask(dn1, dn2)
+        scale_n = np.abs(dn1[m]).max() if m.any() else 0.0
+        scale_a = np.abs(da).max()
+
+        if scale_n == 0.0:
+            # The parameter has no effect on the pattern in this configuration
+            # (e.g. TOF DIFC/DIFA under monochromatic radiation, or Formal
+            # Charge): the analytic derivative must then also be zero.
+            self.assertEqual(
+                scale_a, 0.0,
+                msg=f"{name}: analytic derivative is non-zero ({scale_a:.2e}) "
+                    f"but the parameter does not affect the pattern",
+            )
+            return
+
+        # The parameter affects the pattern -> its derivative must not be a
+        # silent zero. This is exactly the failure the flat-detector bug was.
+        self.assertGreater(
+            scale_a, 0.0,
+            msg=f"{name}: analytic derivative is identically zero while the "
+                f"parameter affects the pattern -> it would be deactivated "
+                f"during refinement",
+        )
+
+        rel = np.abs(da - dn1)[m].max() / scale_n
+        if rel < self.TOL:
+            return
+        # Unit-cell parameters: the analytic derivative deliberately keeps only
+        # the peak-position term, so it can differ from a full finite difference
+        # by the (smooth) intensity-correction term. Check the position
+        # coefficient instead (see TestAnalyticCellDerivatives).
+        if is_cell:
+            coef, *_ = np.linalg.lstsq(
+                np.vstack([da[m], y[:n][m]]).T, dn1[m], rcond=None
+            )
+            self.assertLess(
+                abs(coef[0] - 1.0), self.TOL,
+                msg=f"{name}: position coefficient {coef[0]:.4f} deviates from 1",
+            )
+            return
+        self.fail(f"{name}: rel.err={rel:.2e} exceeds {self.TOL:.0e}")
+
+
 if __name__ == "__main__":
     unittest.main()
