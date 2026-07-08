@@ -5,7 +5,8 @@ Covers:
   * peak-shape parameters  : U, V, W, Eta0, Eta1, Asym0, Asym1, Asym2
   * Scherrer broadening    : P
   * microstrain broadening : MicrostrainPPM
-  * position corrections   : Zero, 2ThetaDispl, 2ThetaTransp
+  * position corrections   : Zero, 2ThetaDispl, 2ThetaTransp,
+                             2ThetaFlatDetDispRatio (+ per-phase variant)
   * unit cell              : a, b, c, alpha, beta, gamma
 
 Peak-shape and position-correction parameters do not change sin(theta)/lambda,
@@ -28,12 +29,14 @@ from pyobjcryst.powderpattern import PowderPattern
 D2R = np.pi / 180
 PROFILE_PARS = ["U", "V", "W", "P", "MicrostrainPPM",
                 "Eta0", "Eta1", "Asym0", "Asym1", "Asym2"]
-CORR_PARS = ["Zero", "2ThetaDispl", "2ThetaTransp"]
+CORR_PARS = ["Zero", "2ThetaDispl", "2ThetaTransp", "2ThetaFlatDetDispRatio"]
+PHASE_CORR_PARS = ["2ThetaFlatDetDispRatioPhase"]  # live on the diffraction phase
 CELL_PARS = ["a", "b", "c", "alpha", "beta", "gamma"]
 STEP = {"U": 1e-8, "V": 1e-8, "W": 1e-8, "P": 1e-9, "MicrostrainPPM": 1e-2,
         "Eta0": 1e-5, "Eta1": 1e-5, "Asym0": 1e-5, "Asym1": 1e-6, "Asym2": 1e-6,
         "a": 1e-6, "b": 1e-6, "c": 1e-6, "alpha": 1e-6, "beta": 1e-6, "gamma": 1e-6,
-        "Zero": 1e-6, "2ThetaDispl": 1e-6, "2ThetaTransp": 1e-6}
+        "Zero": 1e-6, "2ThetaDispl": 1e-6, "2ThetaTransp": 1e-6,
+        "2ThetaFlatDetDispRatio": 1e-6, "2ThetaFlatDetDispRatioPhase": 1e-6}
 
 
 def build(sg, cell, wavelength):
@@ -54,6 +57,8 @@ def build(sg, cell, wavelength):
     pp.GetPar("Zero").SetValue(0.002)
     pp.GetPar("2ThetaDispl").SetValue(0.001)
     pp.GetPar("2ThetaTransp").SetValue(0.0005)
+    pp.GetPar("2ThetaFlatDetDispRatio").SetValue(0.003)
+    diff.GetPar("2ThetaFlatDetDispRatioPhase").SetValue(0.002)
     pp.SetPowderPatternObs(np.ones(npts))
     return cr, pp, diff, prof
 
@@ -78,7 +83,8 @@ def check(label, sg, cell, wavelength):
     print(f"\n=== {label}  (sg={sg}, wl={wavelength}) ===")
     worst = 0.0
     # direct comparison: profile-shape + position-correction parameters
-    for obj, names in ((prof, PROFILE_PARS), (pp, CORR_PARS)):
+    for obj, names in ((prof, PROFILE_PARS), (pp, CORR_PARS),
+                       (diff, PHASE_CORR_PARS)):
         for name in names:
             par = obj.GetPar(name)
             da = np.array(pp.GetLSQDeriv(0, par))
