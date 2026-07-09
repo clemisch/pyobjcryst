@@ -63,6 +63,18 @@ def build(sg, cell, wavelength):
     return cr, pp, diff, prof
 
 
+def lsq_deriv(pp, par):
+    # GetLSQDeriv does not compute derivatives of fixed parameters (a real
+    # least-squares only asks for the ones it has freed), so free it for the
+    # computation, then restore its original fixed state (no lasting side effect).
+    was_fixed = par.IsFixed()
+    par.SetIsFixed(False)
+    try:
+        return np.array(pp.GetLSQDeriv(0, par))
+    finally:
+        par.SetIsFixed(was_fixed)
+
+
 def ndiff(pp, par, step):
     v = par.GetValue()
     par.SetValue(v + step); yp = np.array(pp.GetPowderPatternCalc())
@@ -87,7 +99,7 @@ def check(label, sg, cell, wavelength):
                        (diff, PHASE_CORR_PARS)):
         for name in names:
             par = obj.GetPar(name)
-            da = np.array(pp.GetLSQDeriv(0, par))
+            da = lsq_deriv(pp, par)
             n = len(da)
             dn1 = ndiff(pp, par, STEP[name])[:n]
             dn2 = ndiff(pp, par, STEP[name] * 4)[:n]
@@ -101,7 +113,7 @@ def check(label, sg, cell, wavelength):
     # cell parameters: verify the position component (coefficient of analytic deriv)
     for name in CELL_PARS:
         par = cr.GetPar(name)
-        da = np.array(pp.GetLSQDeriv(0, par))
+        da = lsq_deriv(pp, par)
         n = len(da)
         if np.abs(da).max() == 0:
             print(f"  {name:14s} (fixed by symmetry)")

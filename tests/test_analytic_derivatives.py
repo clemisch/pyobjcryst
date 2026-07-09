@@ -117,6 +117,24 @@ def _build(sg, cell, wavelength):
     return cr, pp, diff, prof
 
 
+def _lsq_deriv(pp, par):
+    """Analytic LSQ derivative of the pattern w.r.t. ``par``.
+
+    GetLSQDeriv does not compute a derivative for a *fixed* parameter (neither
+    does the base-class numerical derivative it falls back to: RefinablePar.Mutate
+    is a no-op on a fixed parameter). A real least-squares only ever asks for the
+    derivatives of the parameters it has freed, so free the parameter for the
+    computation -- then restore its original fixed state so this helper has no
+    lasting side effect on the model.
+    """
+    was_fixed = par.IsFixed()
+    par.SetIsFixed(False)
+    try:
+        return np.array(pp.GetLSQDeriv(0, par))
+    finally:
+        par.SetIsFixed(was_fixed)
+
+
 def _ndiff(pp, par, step):
     """Central finite difference of the whole pattern w.r.t. one parameter."""
     v = par.GetValue()
@@ -163,7 +181,7 @@ class TestAnalyticProfileDerivatives(_ObjCrystTestCase):
                            (diff, PHASE_CORR_PARS)):
             for name in names:
                 par = obj.GetPar(name)
-                da = np.array(pp.GetLSQDeriv(0, par))
+                da = _lsq_deriv(pp, par)
                 n = len(da)
                 dn1 = _ndiff(pp, par, STEP[name])[:n]
                 dn2 = _ndiff(pp, par, STEP[name] * 4)[:n]
@@ -200,7 +218,7 @@ class TestAnalyticProfileDerivatives(_ObjCrystTestCase):
             par = obj.GetPar(name)
             par.SetValue(0.0)
             pp.GetPowderPatternCalc()
-            da = np.array(pp.GetLSQDeriv(0, par))
+            da = _lsq_deriv(pp, par)
             self.assertGreater(
                 np.abs(da).max(), 0.0,
                 msg=f"{name}: derivative is identically zero at value 0 -> the "
@@ -221,7 +239,7 @@ class TestAnalyticProfileDerivatives(_ObjCrystTestCase):
         for obj, name in ((pp, "2ThetaFlatDetDispRatio"),
                           (diff, "2ThetaFlatDetDispRatioPhase")):
             par = obj.GetPar(name)
-            da = np.array(pp.GetLSQDeriv(0, par))
+            da = _lsq_deriv(pp, par)
             n = len(da)
             dn1 = _ndiff(pp, par, STEP[name])[:n]
             dn2 = _ndiff(pp, par, STEP[name] * 4)[:n]
@@ -239,11 +257,11 @@ class TestAnalyticCellDerivatives(_ObjCrystTestCase):
         checked_any = False
         for name in CELL_PARS:
             par = cr.GetPar(name)
-            da = np.array(pp.GetLSQDeriv(0, par))
+            da = _lsq_deriv(pp, par)
             n = len(da)
             if np.abs(da).max() == 0:
-                # Parameter is constrained (fixed) by the space-group symmetry;
-                # analytic derivative must be exactly zero -- which it is here.
+                # Parameter is constrained by the space-group symmetry (even when
+                # freed); its analytic derivative must be exactly zero.
                 continue
             checked_any = True
             dn1 = _ndiff(pp, par, STEP[name])[:n]
@@ -273,9 +291,11 @@ class TestAnalyticCellDerivatives(_ObjCrystTestCase):
         # Cubic: only 'a' is free; b, c and all angles are constrained.
         cr, pp, diff, prof = _build("Fm-3m", (4.05, 4.05, 4.05, 90, 90, 90), 1.5406)
         pp.GetPowderPatternCalc()
-        self.assertGreater(np.abs(np.array(pp.GetLSQDeriv(0, cr.GetPar("a")))).max(), 0)
+        self.assertGreater(np.abs(_lsq_deriv(pp, cr.GetPar("a"))).max(), 0)
+        # b, c and the angles are constrained by the cubic symmetry: their
+        # derivative must be exactly zero even when the parameter is freed.
         for name in ["b", "c", "alpha", "beta", "gamma"]:
-            d = np.array(pp.GetLSQDeriv(0, cr.GetPar(name)))
+            d = _lsq_deriv(pp, cr.GetPar(name))
             self.assertEqual(
                 np.abs(d).max(), 0.0,
                 msg=f"constrained parameter {name} has a non-zero derivative",
@@ -442,7 +462,7 @@ class TestAllParametersDerivative(_ObjCrystTestCase):
         # particular have tiny values, for which a relative step would be pure
         # rounding noise); otherwise a relative step is fine.
         step = STEP.get(name, max(abs(v0) * 1e-5, 1e-7))
-        da = np.array(pp.GetLSQDeriv(0, par))
+        da = _lsq_deriv(pp, par)
         n = len(da)
         dn1 = _ndiff(pp, par, step)[:n]
         dn2 = _ndiff(pp, par, step * 4)[:n]
