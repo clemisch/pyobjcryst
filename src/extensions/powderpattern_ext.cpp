@@ -21,7 +21,12 @@
 #include <boost/python/def.hpp>
 #include <boost/python/copy_const_reference.hpp>
 #include <boost/python/manage_new_object.hpp>
+#include <boost/python/dict.hpp>
+#include <boost/python/extract.hpp>
 #include <boost/format.hpp>
+
+#include <map>
+#include <set>
 #undef B0
 
 #include <string>
@@ -200,6 +205,29 @@ bp::list _GetScores(const SpaceGroupExplorer &spgex)
     return containerToPyList(spgex.GetScores());
 }
 
+// Compute the whole LSQ Jacobian in a single (batched) call and return it as a
+// dict {parameter name: derivative ndarray}. This shares the analytical work
+// across all requested parameters in one pass, unlike calling GetLSQDeriv() once
+// per parameter. `idx` is the LSQ function index (0: full pattern, 1: integrated).
+bp::dict _GetLSQ_FullDeriv(PowderPattern& pp, const unsigned int idx, bp::object pars)
+{
+    std::set<RefinablePar*> vpar;
+    const long n = bp::len(pars);
+    for(long i=0;i<n;++i)
+    {
+        RefinablePar& rp = bp::extract<RefinablePar&>(pars[i]);
+        vpar.insert(&rp);
+    }
+    std::map<RefinablePar*, CrystVector_REAL>& m = pp.GetLSQ_FullDeriv(idx, vpar);
+    bp::dict res;
+    for(std::map<RefinablePar*, CrystVector_REAL>::iterator pos=m.begin(); pos!=m.end(); ++pos)
+    {
+        if(pos->first==0) continue;// the null key holds the calculated pattern
+        res[pos->first->GetName()] = pos->second;
+    }
+    return res;
+}
+
 }   // namespace
 
 void wrap_powderpattern()
@@ -245,6 +273,8 @@ void wrap_powderpattern()
         .def("GetPowderPatternCalc",
                 &PowderPattern::GetPowderPatternCalc,
                 return_value_policy<copy_const_reference>())
+        .def("GetLSQ_FullDeriv", &_GetLSQ_FullDeriv,
+                (bp::arg("idx"), bp::arg("parlist")))
         .def("GetPowderPatternObs",
                 &PowderPattern::GetPowderPatternObs,
                 return_value_policy<copy_const_reference>())

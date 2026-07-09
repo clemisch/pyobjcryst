@@ -348,6 +348,42 @@ class TestCellRefinementWithAnalyticDerivatives(_ObjCrystTestCase):
         self.assertLess(ang_err, 1e-2, msg=f"cell angle error {ang_err:.2e} rad")
 
 
+class TestBatchedFullDeriv(_ObjCrystTestCase):
+    """The batched whole-Jacobian path (GetLSQ_FullDeriv, used by LSQNumObj) must
+    give exactly the same derivatives as the per-parameter GetLSQDeriv path.
+
+    GetLSQ_FullDeriv computes all the analytic derivatives in one shared pass
+    (and falls back to a numerical derivative for the untrusted parameters); this
+    is what makes the least-squares gradient fast, so it must stay bit-for-bit
+    consistent with the per-parameter derivatives that the other tests validate
+    against finite differences.
+    """
+
+    def test_batched_matches_per_parameter(self):
+        cr, pp, diff, prof = _build("P-1", (5.0, 6.0, 7.0, 85, 95, 100), 1.5406)
+        sp = cr.GetScatteringPower("Ni")
+        # A mix of analytic (profile, cell) and numeric-fallback (intensity) params.
+        pars = [prof.GetPar(n) for n in PROFILE_PARS]
+        pars += [cr.GetPar(n) for n in CELL_PARS]
+        pars += [sp.GetPar("Biso"), pp.GetPar("Scale_")]
+        for p in pars:
+            p.SetIsFixed(False)
+
+        per_param = {p.GetName(): np.array(pp.GetLSQDeriv(0, p)) for p in pars}
+        batched = pp.GetLSQ_FullDeriv(0, pars)
+
+        for name, dpp in per_param.items():
+            self.assertIn(name, batched, msg=f"{name} missing from batched result")
+            db = batched[name]
+            n = min(len(db), len(dpp))
+            scale = max(np.abs(dpp[:n]).max(), 1e-30)
+            err = np.abs(db[:n] - dpp[:n]).max() / scale
+            self.assertLess(
+                err, 1e-10,
+                msg=f"{name}: batched vs per-parameter rel.diff={err:.2e}",
+            )
+
+
 # --- Every-parameter sweep --------------------------------------------------
 #
 # The flat-detector bug (a parameter whose analytic derivative was silently 0,
