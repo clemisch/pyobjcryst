@@ -88,9 +88,11 @@ vars.Add(BoolVariable(
     'build with profiling information', False))
 vars.Add(
     'arch',
-    "target CPU passed to -march in the 'fast' build, e.g. 'native' for local "
-    "builds or 'x86-64-v3' for a portable AVX2 deployment. Empty means no -march. "
-    "Defaults to the OBJCRYST_ARCH environment variable if set.",
+    "target CPU passed to -march in the 'fast' build. Empty (the default) means "
+    "no -march / maximum portability. Set 'x86-64-v3' for a portable AVX2/FMA "
+    "build (Intel Haswell 2013+, AMD Zen 2017+), 'native' for a machine-specific "
+    "build, or 'x86-64-v4' for AVX-512. Settable via the OBJCRYST_ARCH environment "
+    "variable; a command-line arch= overrides both.",
     os.environ.get('OBJCRYST_ARCH', ''))
 vars.Update(env)
 SetOption('silent', not env['verbose'])
