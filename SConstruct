@@ -214,7 +214,7 @@ else:
         fast_opts = ['-fast', '-no-ipo']
     else:
         env.AppendUnique(CCFLAGS=['-fno-strict-aliasing'])
-        fast_opts = ['-ffast-math']
+        fast_opts = ['-ffast-math', '-march=native']
 
     if env['PLATFORM'] == 'darwin':
         # macOS bundle
