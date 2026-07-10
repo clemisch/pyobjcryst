@@ -59,9 +59,13 @@ CELL_PARS = ["a", "b", "c", "alpha", "beta", "gamma"]
 # Finite-difference steps, chosen small enough that the central difference is
 # accurate but large enough to stay well above rounding noise.
 STEP = {
-    "U": 1e-8, "V": 1e-8, "W": 1e-8, "P": 1e-9, "MicrostrainPPM": 1e-2,
-    "Eta0": 1e-5, "Eta1": 1e-5, "Asym0": 1e-5, "Asym1": 1e-6, "Asym2": 1e-6,
-    "a": 1e-6, "b": 1e-6, "c": 1e-6, "alpha": 1e-6, "beta": 1e-6, "gamma": 1e-6,
+    "U": 1e-8, "V": 1e-8, "W": 1e-8, 
+    "Eta0": 1e-5, "Eta1": 1e-5, 
+    "Asym0": 1e-5, "Asym1": 1e-6, "Asym2": 1e-6,
+    "a": 1e-6, "b": 1e-6, "c": 1e-6, 
+    "alpha": 1e-6, "beta": 1e-6, "gamma": 1e-6,
+    "P": 1e-9, 
+    "MicrostrainPPM": 1e-2,
     "Zero": 1e-6, "2ThetaDispl": 1e-6, "2ThetaTransp": 1e-6,
     "2ThetaFlatDetDispRatio": 1e-6, "2ThetaFlatDetDispRatioPhase": 1e-6,
 }
