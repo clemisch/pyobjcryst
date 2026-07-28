@@ -55,10 +55,10 @@ the description and news item.
 
 ## CI checks on PRs
 
-| Workflow | Trigger | What it does |
-|---|---|---|
-| `tests-on-pr` | every PR | Builds the C extension and runs the full test suite |
-| `check-news-item` | every PR | Verifies a `news/<PR-number>.rst` file exists |
+| Workflow          | Trigger  | What it does                                        |
+| ----------------- | -------- | --------------------------------------------------- |
+| `tests-on-pr`     | every PR | Builds the C extension and runs the full test suite |
+| `check-news-item` | every PR | Verifies a `news/<PR-number>.rst` file exists       |
 
 Both workflows are provided by `scikit-package/release-scripts`.
 
