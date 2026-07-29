@@ -44,6 +44,17 @@ class TestRadiation(unittest.TestCase):
         )
         return
 
+    def testLinearPolarRate(self):
+        """Test getting and setting linear polarisation rate."""
+        r = Radiation()
+        # Default for X-ray should be 0
+        self.assertAlmostEqual(r.GetLinearPolarRate(), 0.0)
+        r.SetLinearPolarRate(0.95)
+        self.assertAlmostEqual(r.GetLinearPolarRate(), 0.95)
+        r.SetLinearPolarRate(0.0)
+        self.assertAlmostEqual(r.GetLinearPolarRate(), 0.0)
+        return
+
 
 if __name__ == "__main__":
     unittest.main()

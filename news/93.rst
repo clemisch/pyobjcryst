@@ -1,0 +1,29 @@
+**Added:**
+
+* Exposed ``Radiation.GetLinearPolarRate()``, ``Radiation.SetLinearPolarRate()``,
+  ``Radiation.GetClockWavelength()``, and ``Radiation.GetClockRadiation()`` via
+  Python bindings. Closes `#38 <https://github.com/diffpy/pyobjcryst/issues/38>`_.
+  ``Radiation.GetClockLinearPolarRate()`` is also bound and will be available once
+  `diffpy/libobjcryst` picks up `vincefn/objcryst PR #79
+  <https://github.com/vincefn/objcryst/pull/79>`_, which adds the dedicated
+  polarisation clock and fixes the polarisation-correction recalculation trigger.
+
+**Changed:**
+
+* <news item>
+
+**Deprecated:**
+
+* <news item>
+
+**Removed:**
+
+* <news item>
+
+**Fixed:**
+
+* <news item>
+
+**Security:**
+
+* <news item>

@@ -22,6 +22,7 @@
 #include <iostream>
 
 #include <ObjCryst/ObjCryst/ScatteringData.h>
+#include <ObjCryst/version.h>
 
 namespace bp = boost::python;
 using namespace boost::python;
@@ -51,5 +52,15 @@ void wrap_radiation()
         (bp::arg("XRayTubeElementName"), bp::arg("alpha2Alpha2ratio")=0.5))
         .def("GetXRayTubeDeltaLambda", & Radiation::GetXRayTubeDeltaLambda)
         .def("GetXRayTubeAlpha2Alpha1Ratio", & Radiation::GetXRayTubeAlpha2Alpha1Ratio)
+        .def("GetLinearPolarRate", &Radiation::GetLinearPolarRate)
+        .def("SetLinearPolarRate", &Radiation::SetLinearPolarRate)
+        .def("GetClockWavelength", &Radiation::GetClockWavelength,
+             return_value_policy<copy_const_reference>())
+        .def("GetClockRadiation", &Radiation::GetClockRadiation,
+             return_value_policy<copy_const_reference>())
+#if LIBOBJCRYST_VERSION >= 2026002000000LL
+        .def("GetClockLinearPolarRate", &Radiation::GetClockLinearPolarRate,
+             return_value_policy<copy_const_reference>())
+#endif
         ;
 }
