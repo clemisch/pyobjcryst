@@ -41,6 +41,12 @@ the description and news item.
 - Make sure `git config user.email` is a verified address on the author's
   GitHub account so commits are attributed correctly.
 
+## Coding standards
+
+1. Where possible, make the code conform to Billinge group coding
+   standards.  These can be found in the documentation of
+   [scikit-package](https://scikit-package.github.io/scikit-package/) 
+
 ## Before opening a PR
 
 1. **News item** — every PR that changes user-visible behaviour must add a
