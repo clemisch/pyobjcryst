@@ -24,6 +24,7 @@
 #include <boost/format.hpp>
 #undef B0
 
+#include <memory>
 #include <string>
 
 #include <ObjCryst/RefinableObj/RefinableObj.h>
@@ -38,7 +39,6 @@ using namespace boost::python;
 using namespace ObjCryst;
 
 namespace {
-
 
 // This creates a C++ PowderPattern object
 PowderPattern* _CreatePowderPatternFromCIF(bp::object input)
@@ -117,11 +117,30 @@ PowderPatternBackground& addppbackground(PowderPattern& pp)
 
 PowderPatternDiffraction& addppdiffraction(PowderPattern& pp, Crystal& crst)
 {
-    PowderPatternDiffraction* ppc = new PowderPatternDiffraction();
+    std::unique_ptr<PowderPatternDiffraction> ppc(new PowderPatternDiffraction());
     ppc->SetCrystal(crst);
+    // Prepare against the target powder-pattern context before final
+    // registration so a no-reflections failure cannot leave a broken
+    // partially attached component behind.
+    ppc->SetParentPowderPattern(pp);
+    ppc->GenHKLFullSpace();
+    if(ppc->GetNbReflBelowMaxSinThetaOvLambda() == 0)
+    {
+        throw ObjCrystException(
+            "PowderPatternDiffraction::CalcSinThetaLambda(): there are no reflections!"
+        );
+    }
     pp.AddPowderPatternComponent(*ppc);
-    pp.Prepare();
-    return *ppc;
+    try
+    {
+        pp.Prepare();
+    }
+    catch(...)
+    {
+        pp.RemovePowderPatternComponent(*ppc);
+        throw;
+    }
+    return *ppc.release();
 }
 
 

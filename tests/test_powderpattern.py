@@ -19,6 +19,7 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+from testutils import makeCrystal, makeScatterer
 
 from pyobjcryst import ObjCrystException
 from pyobjcryst.indexing import CrystalCentering, CrystalSystem, quick_index
@@ -73,6 +74,20 @@ class TestPowderPattern(unittest.TestCase):
 
     def test_GetPowderPatternX(self):
         self.assertTrue(np.array_equal([], self.pp.GetPowderPatternX()))
+        return
+
+    def test_AddPowderPatternDiffraction_rollback_on_prepare_error(self):
+        pp = self.pp
+        crystal = makeCrystal(*makeScatterer())
+        pp.SetWavelength(1.54056)
+        # Keep the 2theta window below the first reflection so setup raises
+        # and we can verify the failed diffraction component is not retained.
+        pp.SetPowderPatternPar(np.deg2rad(0.1), np.deg2rad(0.01), 41)
+
+        with self.assertRaisesRegex(ObjCrystException, "no reflections"):
+            pp.AddPowderPatternDiffraction(crystal)
+
+        self.assertEqual(0, pp.GetNbPowderPatternComponent())
         return
 
     # def test_GetScaleFactor(self):  assert False

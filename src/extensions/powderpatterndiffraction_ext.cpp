@@ -77,4 +77,5 @@ void wrap_powderpatterndiffraction()
         .def("GetFhklObsSq", &PowderPatternDiffraction::GetFhklObsSq,
                 return_value_policy<copy_const_reference>())
         ;
+
 }
