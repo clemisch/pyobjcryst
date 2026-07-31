@@ -44,8 +44,8 @@ the description and news item.
 ## Coding standards
 
 1. Where possible, make the code conform to Billinge group coding
-   standards.  These can be found in the documentation of
-   [scikit-package](https://scikit-package.github.io/scikit-package/) 
+   standards. These can be found in the documentation of
+   [scikit-package](https://scikit-package.github.io/scikit-package/)
 
 ## Before opening a PR
 
