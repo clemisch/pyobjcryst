@@ -277,7 +277,6 @@ class Crystal(Crystal_orig):
             independent atoms, no symmetry or translation is applied
         :return : the list of atoms and bonds to be displayed for 3dmol
         """
-
         spg = self.GetSpaceGroup()
         vv = []
         idx = 0

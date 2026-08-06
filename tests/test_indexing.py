@@ -56,7 +56,7 @@ class TestIndexing(unittest.TestCase):
             1 / 1.537,
             1 / 47.326,
             20,
-            CrystalSystem.ORTHOROMBIC,
+            CrystalSystem.ORTHORHOMBIC,
             CrystalCentering.LATTICE_F,
             1.2,
         )
@@ -65,7 +65,7 @@ class TestIndexing(unittest.TestCase):
             1 / 1.537,
             1 / 47.326,
             20,
-            CrystalSystem.ORTHOROMBIC,
+            CrystalSystem.ORTHORHOMBIC,
             CrystalCentering.LATTICE_I,
             0.3,
         )

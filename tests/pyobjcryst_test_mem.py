@@ -12,8 +12,9 @@
 # See LICENSE_DANSE.txt for license information.
 #
 ##############################################################################
-"""Small tests for pyobjcryst. Not run by pytest, for memory leak
-checks.
+"""Small tests for pyobjcryst.
+
+Not run by pytest, for memory leak checks.
 
 To check for memory leaks, run valgrind --tool=memcheck --leak-
 check=full python ./pyobjcrysttest.py
