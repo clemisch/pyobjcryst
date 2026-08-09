@@ -70,7 +70,7 @@ std::string __str__RecUnitCell(RecUnitCell& ruc)
     {
       case TRICLINIC:sys="TRICLINIC"; break;
       case MONOCLINIC:sys="MONOCLINIC"; break;
-      case ORTHOROMBIC:sys="ORTHOROMBIC"; break;
+      case ORTHORHOMBIC:sys="ORTHORHOMBIC"; break;
       case HEXAGONAL:sys="HEXAGONAL"; break;
       case RHOMBOEDRAL:sys="RHOMBOEDRAL"; break;
       case TETRAGONAL:sys="TETRAGONAL"; break;
@@ -299,6 +299,7 @@ void wrap_indexing()
         .value("TRICLINIC", TRICLINIC)
         .value("MONOCLINIC", MONOCLINIC)
         .value("ORTHOROMBIC", ORTHOROMBIC)
+        .value("ORTHORHOMBIC", ORTHORHOMBIC)
         .value("HEXAGONAL", HEXAGONAL)
         .value("RHOMBOEDRAL", RHOMBOEDRAL)
         .value("TETRAGONAL", TETRAGONAL)

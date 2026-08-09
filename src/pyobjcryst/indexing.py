@@ -85,7 +85,7 @@ def quick_index(
             CrystalSystem.TETRAGONAL,
             CrystalSystem.RHOMBOEDRAL,
             CrystalSystem.HEXAGONAL,
-            CrystalSystem.ORTHOROMBIC,
+            CrystalSystem.ORTHORHOMBIC,
             CrystalSystem.MONOCLINIC,
         ]:
             if csys == CrystalSystem.CUBIC:
@@ -100,7 +100,7 @@ def quick_index(
                 vcen = [CrystalCentering.LATTICE_P]
             elif csys == CrystalSystem.HEXAGONAL:
                 vcen = [CrystalCentering.LATTICE_P]
-            elif csys == CrystalSystem.ORTHOROMBIC:
+            elif csys == CrystalSystem.ORTHORHOMBIC:
                 vcen = [
                     CrystalCentering.LATTICE_P,
                     CrystalCentering.LATTICE_A,
