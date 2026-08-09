@@ -16,7 +16,7 @@
 
 **Fixed:**
 
-* Exposed the correctly spelled `ORTHORHOMBIC` while preserving `ORTHOROMBIC` as temporary backend compatible alias
+* Exposed the correctly spelled `ORTHORHOMBIC` while preserving `ORTHOROMBIC` as temporary backend compatible alias.
 
 **Security:**
 
