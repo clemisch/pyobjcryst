@@ -44,7 +44,7 @@ For more information about the pyobjcryst library, please consult our `online do
 complex modeling initiative which originated in the DANSE project
 at Columbia University. It was further developed at Brookhaven National Laboratory,
 and Columbia University and the European Synchrotron Radiation Source (ESRF) and is now
-maintained at Columbia and ESRF.
+maintained at University of California, Santa Barbara and ESRF.
 The pyobjcryst sources are hosted at https://github.com/diffpy/pyobjcryst.
 
 Citation
@@ -74,26 +74,22 @@ The second paper describes the c++ crystallographic objects in
 Installation
 ------------
 
-The latest release of ``pyobjcryst`` runs in python versions 3.11, 3.12 and 3.13. You may
+The latest release of ``pyobjcryst`` runs in python versions 3.12, 3.13 and 3.14. You may
 specify an earlier release if you need it to run in an earlier version of Python.
 
 The preferred method is to use `Miniconda Python
 <https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html>`_
-or `mamba <https://mamba.readthedocs.io/en/latest/>`__
 and install from the "conda-forge" channel of Conda packages.
-mamba works in the same way as conda but has the advantage of being much
-faster when resolving dependencies during installation. It also uses by
-default the conda-forge repository, which is what almost all users would want.
 
-To add "conda-forge" to the conda channels, run the following in a terminal. ::
+To permanently add "conda-forge" to the conda channels (recommended), run the following in a terminal. ::
 
         conda config --add channels conda-forge
 
 We want to install our packages in a suitable conda environment.
-The following creates and activates a new environment named ``pyobjcryst_env`` ::
+The following creates and activates a new environment named ``pyobjcryst-env`` ::
 
-        conda create -n pyobjcryst_env pyobjcryst
-        conda activate pyobjcryst_env
+        conda create -n pyobjcryst-env pyobjcryst
+        conda activate pyobjcryst-env
 
 To confirm that the installation was successful, type ::
 
@@ -101,12 +97,13 @@ To confirm that the installation was successful, type ::
 
 The output should print the latest version displayed on the badges above.
 
-To use mamba, replace ``conda`` with ``mamba`` in the commands above.
-
 pyobjcryst is also included in the ``diffpy.cmi`` collection of packages for
 structure analysis and so can be installed by ::
 
         conda install -c conda-forge diffpy.cmi
+
+and following the instructions in the `diffpy.cmi documentation <https://www.diffpy.org/diffpy.cmi/>`_ to install packs containing pyobjcryst
+and its libraries.
 
 Optional graphical dependencies for jupyter notebooks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -131,8 +128,13 @@ Alternative methods of installation
 These approaches are not recommended but reproduced here for advanced users.
 You can use ``pip`` to download and install the latest release from
 `Python Package Index <https://pypi.python.org>`_.
-To install using ``pip`` into your ``pyobjcryst_env`` environment, type ::
 
+Pyobjcryst can be installed from pip.  We recommend installing the dependencies that can be
+found in ``requirements/conda.txt`` from conda-forge, e.g., ::
+
+        conda create -n pyobjcryst-env python=3.14
+        conda activate pyobjcryst-env
+        conda install -c conda-forge numpy libobjcryst libboost-devel libboost-python packaging ipywidgets matplotlib-base ipympl py3dmol
         pip install pyobjcryst
 
 If you prefer to install from sources, after installing the dependencies, obtain the source archive from
