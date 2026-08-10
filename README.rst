@@ -44,7 +44,7 @@ For more information about the pyobjcryst library, please consult our `online do
 complex modeling initiative which originated in the DANSE project
 at Columbia University. It was further developed at Brookhaven National Laboratory,
 and Columbia University and the European Synchrotron Radiation Source (ESRF) and is now
-maintained at University of California and ESRF.
+maintained at University of California, Santa Barbara and ESRF.
 The pyobjcryst sources are hosted at https://github.com/diffpy/pyobjcryst.
 
 Citation
@@ -136,8 +136,6 @@ found in ``requirements/conda.txt`` from conda-forge, e.g., ::
         conda activate pyobjcryst-env
         conda install -c conda-forge numpy libobjcryst libboost-devel libboost-python packaging ipywidgets matplotlib-base ipympl py3dmol
         pip install pyobjcryst
-
-To install using ``pip`` into your ``pyobjcryst_env`` environment, type ::
 
 If you prefer to install from sources, after installing the dependencies, obtain the source archive from
 `GitHub <https://github.com/diffpy/pyobjcryst/>`_. Once installed, ``cd`` into your ``pyobjcryst`` directory
