@@ -4,6 +4,62 @@ Release notes
 
 .. current developments
 
+2026.1.0
+=====
+
+**Added:**
+
+* ``quick_index()`` now accepts a ``length_min`` parameter (default: 2.5 Å)
+to control the minimum unit cell length explored during indexing.
+* Exposed `ReflectionProfile` methods (`GetProfile`, `GetFullProfileWidth`, `XMLOutput`, `XMLInput`) via Python bindings. Added unit tests.
+* The binding to `ReflectionProfile.GetProfile(x, xcenter, h, k, l)` accepts python sequences / `numpy` arrays for the `x` argument, thanks to the helper function `assignCrystVector`.
+* None.
+* Expose PowderPattern.GetPowderPatternObsSigma and PowderPattern.SetPowderPatternObsSigma from objcryst
+* Add ``AGENTS.md`` documenting contribution guidelines for AI coding agents
+(dependency chain, commit conventions, news-item policy, human-review
+requirement).
+* Add support for Python 3.14.
+* Exposed ``Radiation.GetLinearPolarRate()``, ``Radiation.SetLinearPolarRate()``,
+``Radiation.GetClockWavelength()``, and ``Radiation.GetClockRadiation()`` via
+Python bindings. Closes `#38 <https://github.com/diffpy/pyobjcryst/issues/38>`_.
+``Radiation.GetClockLinearPolarRate()`` is also bound and will be available once
+`diffpy/libobjcryst` picks up `vincefn/objcryst PR #79
+<https://github.com/vincefn/objcryst/pull/79>`_, which adds the dedicated
+polarisation clock and fixes the polarisation-correction recalculation trigger.
+
+**Changed:**
+
+* ``quick_index()`` default minimum unit cell length lowered from 3 Å to 2.5 Å,
+allowing correct indexing of compact structures such as α-Fe, B, or ZRNCl
+(`issue #47 <https://github.com/diffpy/pyobjcryst/issues/47>`_).
+* None.
+* None.
+
+**Deprecated:**
+
+* None.
+* None.
+
+**Fixed:**
+
+* Exposed the correctly spelled `ORTHORHOMBIC` while preserving `ORTHOROMBIC` as temporary backend compatible alias
+* Building with `pip install .` now uses `sysconfig` to locate `ObjCryst++`` libraries outside conda environments.
+* Missing definition of `ScatteringData` in `powderpatterndiffraction_ext.ccp`
+* Fixed `PowderPattern.AddPowderPatternDiffraction()` so a no-reflections failure does not leave a failed diffraction component attached to the powder pattern.
+* `quick_fit_profile(displ_transl=True)` now correctly enables refinement of `2ThetaDispl` and `2ThetaTransp` by unfixing both parameters.
+
+**Removed:**
+
+* None.
+* None.
+* Remove support for Python 3.11.
+
+**Security:**
+
+* None.
+* None.
+
+
 2025.1.0
 =====
 
