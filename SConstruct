@@ -75,6 +75,12 @@ vars.Add(EnumVariable(
 vars.Add(BoolVariable(
     'profile',
     'build with profiling information', False))
+vars.Add(
+    'arch',
+    'target CPU passed to -march in the \'fast\' build, e.g. \'native\' for local '
+    'builds or \'x86-64-v3\' for a portable AVX2 deployment. Empty means no -march. '
+    'Defaults to the OBJCRYST_ARCH environment variable if set.',
+    os.environ.get('OBJCRYST_ARCH', ''))
 vars.Update(env)
 
 # Use C++ compiler specified by the 'tool' option.
@@ -184,6 +190,8 @@ else:
     else:
         env.AppendUnique(CCFLAGS=['-fno-strict-aliasing'])
         fast_opts = ['-ffast-math']
+        if env.get('arch'):
+            fast_opts.append('-march=' + env['arch'])       
 
     if env['PLATFORM'] == 'darwin':
         # macOS bundle
