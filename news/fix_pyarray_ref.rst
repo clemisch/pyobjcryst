@@ -16,7 +16,7 @@
 
 **Fixed:**
 
-* Fix memory leak in makeNdArray 
+* Fix memory leak in makeNdArray
 
 **Security:**
 
