@@ -57,7 +57,8 @@ class TestGlobalOptim(unittest.TestCase):
         # print(lsq.GetCompiledRefinedObj())
 
     def test_lsq_compiled_refined_obj_erase_all_param_set(self):
-        """Check parameter sets can be erased on compiled refined objects."""
+        """Check parameter sets can be erased on compiled refined
+        objects."""
         lsq = LSQ()
         lsq.SetRefinedObj(self.d, 0, True, True)
         lsq.PrepareRefParList()
