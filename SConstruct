@@ -191,7 +191,7 @@ else:
         env.AppendUnique(CCFLAGS=['-fno-strict-aliasing'])
         fast_opts = ['-ffast-math']
         if env.get('arch'):
-            fast_opts.append('-march=' + env['arch'])       
+            fast_opts.append('-march=' + env['arch'])
 
     if env['PLATFORM'] == 'darwin':
         # macOS bundle
