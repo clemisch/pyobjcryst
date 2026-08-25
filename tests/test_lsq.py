@@ -13,7 +13,7 @@ import unittest
 
 import pytest
 
-from pyobjcryst import refinableobj
+from pyobjcryst import ObjCrystException, refinableobj
 from pyobjcryst.diffractiondatasinglecrystal import (
     DiffractionDataSingleCrystal,
 )
@@ -55,6 +55,17 @@ class TestGlobalOptim(unittest.TestCase):
         lsq.SetRefinedObj(self.d, 0, True, True)
         lsq.PrepareRefParList()
         # print(lsq.GetCompiledRefinedObj())
+
+    def test_lsq_compiled_refined_obj_erase_all_param_set(self):
+        """Check parameter sets can be erased on compiled refined
+        objects."""
+        lsq = LSQ()
+        lsq.SetRefinedObj(self.d, 0, True, True)
+        lsq.PrepareRefParList()
+        refobj = lsq.GetCompiledRefinedObj()
+        save = refobj.CreateParamSet("save")
+        refobj.EraseAllParamSet()
+        self.assertRaises(ObjCrystException, refobj.SaveParamSet, save)
 
     def test_lsq_set_pr_fixed(self):
         """Check Creating a basic LSQ object & get obs&calc arrays."""
