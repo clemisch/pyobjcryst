@@ -7,6 +7,11 @@ import pytest
 
 from pyobjcryst.powderpattern import PowderPattern
 from pyobjcryst.refinableobj import RefinableObj
+from pyobjcryst.reflectionprofile import (
+    ReflectionProfile,
+    ReflectionProfilePseudoVoigt,
+    ReflectionProfilePseudoVoigtAnisotropic,
+)
 
 
 class TestReflectionProfile(unittest.TestCase):
@@ -19,16 +24,112 @@ class TestReflectionProfile(unittest.TestCase):
     def setUp(self):
         """Set up a ReflectionProfile instance for testing."""
         x = np.linspace(0, 40, 1000)
-        c = self.loadcifdata("paracetamol.cif")
+        self.crystal = self.loadcifdata("paracetamol.cif")
 
         self.pp = PowderPattern()
         self.pp.SetWavelength(0.7)
         self.pp.SetPowderPatternX(np.deg2rad(x))
         self.pp.SetPowderPatternObs(np.ones_like(x))
 
-        self.ppd = self.pp.AddPowderPatternDiffraction(c)
+        self.ppd = self.pp.AddPowderPatternDiffraction(self.crystal)
 
         self.profile = self.ppd.GetProfile()
+
+    def test_concrete_pseudo_voigt_profiles(self):
+        """Concrete isotropic and anisotropic profiles are constructible."""
+        isotropic = ReflectionProfilePseudoVoigt()
+        anisotropic = ReflectionProfilePseudoVoigtAnisotropic()
+
+        self.assertIsInstance(isotropic, ReflectionProfile)
+        self.assertIsInstance(anisotropic, ReflectionProfile)
+        self.assertFalse(isotropic.IsAnisotropic())
+        self.assertTrue(anisotropic.IsAnisotropic())
+
+        expected = {
+            "U",
+            "V",
+            "W",
+            "P",
+            "X",
+            "Y",
+            "G_HH",
+            "G_KK",
+            "G_LL",
+            "G_HK",
+            "G_HL",
+            "G_KL",
+            "Eta0",
+            "Eta1",
+            "Asym0",
+            "Asym1",
+            "Asym2",
+        }
+        self.assertEqual(
+            expected,
+            {
+                anisotropic.GetPar(i).GetName()
+                for i in range(anisotropic.GetNbPar())
+            },
+        )
+
+    def test_anisotropic_set_profile_par(self):
+        """SetProfilePar assigns P and retains symmetric default asymmetry."""
+        profile = ReflectionProfilePseudoVoigtAnisotropic()
+        profile.SetProfilePar(1e-6, fwhmGaussP=2e-6)
+
+        self.assertAlmostEqual(profile.GetPar("W").GetValue(), 1e-6)
+        self.assertAlmostEqual(profile.GetPar("P").GetValue(), 2e-6)
+        self.assertAlmostEqual(profile.GetPar("Asym0").GetValue(), 1.0)
+
+    def test_anisotropic_profile_depends_on_hkl(self):
+        """Anisotropic Lorentz coefficients produce direction dependence."""
+        profile = ReflectionProfilePseudoVoigtAnisotropic()
+        profile.SetProfilePar(
+            1e-6,
+            fwhmLorentzGammaHH=1e-3,
+            fwhmLorentzGammaKK=2e-3,
+            pseudoVoigtEta0=1,
+        )
+        center = 0.5
+        x = np.linspace(center - 0.1, center + 0.1, 401)
+
+        h00 = profile.GetProfile(x, center, 1, 0, 0)
+        zero_k0 = profile.GetProfile(x, center, 0, 1, 0)
+
+        self.assertFalse(np.allclose(h00, zero_k0))
+
+    def test_set_profile_copies_reusable_template(self):
+        """One profile template can safely initialize multiple phases."""
+        second = self.pp.AddPowderPatternDiffraction(self.crystal)
+        template = ReflectionProfilePseudoVoigtAnisotropic()
+        template.GetPar("W").SetValue(1e-6)
+        template.GetPar("G_HH").SetValue(2e-6)
+
+        for pdiff in (self.ppd, second):
+            pdiff.SetProfile(template)
+
+        first_profile = self.ppd.GetProfile()
+        second_profile = second.GetProfile()
+        self.assertIsInstance(
+            first_profile, ReflectionProfilePseudoVoigtAnisotropic
+        )
+        self.assertIsInstance(
+            second_profile, ReflectionProfilePseudoVoigtAnisotropic
+        )
+        self.assertAlmostEqual(first_profile.GetPar("W").GetValue(), 1e-6)
+        self.assertAlmostEqual(second_profile.GetPar("G_HH").GetValue(), 2e-6)
+
+        first_profile.GetPar("W").SetValue(3e-6)
+        self.assertAlmostEqual(template.GetPar("W").GetValue(), 1e-6)
+        self.assertAlmostEqual(second_profile.GetPar("W").GetValue(), 1e-6)
+
+    def test_set_profile_accepts_temporary(self):
+        """A temporary concrete profile is safely copied into the phase."""
+        self.ppd.SetProfile(ReflectionProfilePseudoVoigt())
+        profile = self.ppd.GetProfile()
+
+        self.assertIsInstance(profile, ReflectionProfilePseudoVoigt)
+        self.assertFalse(profile.IsAnisotropic())
 
     def test_get_computed_profile(self):
         """Sample a profile slice and verify broadening lowers the peak
