@@ -1,6 +1,6 @@
 **Added:**
 
-* Add explicitely constructable reflection profiles
+* Add explicitly constructable reflection profiles
 * Expose objcryst's anisotropic Pseudo-Voigt profile
 * Add PowderPatternDiffraction.SetProfile
 
