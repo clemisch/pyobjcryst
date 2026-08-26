@@ -13,7 +13,6 @@ Release notes
 to control the minimum unit cell length explored during indexing.
 * Exposed `ReflectionProfile` methods (`GetProfile`, `GetFullProfileWidth`, `XMLOutput`, `XMLInput`) via Python bindings. Added unit tests.
 * The binding to `ReflectionProfile.GetProfile(x, xcenter, h, k, l)` accepts python sequences / `numpy` arrays for the `x` argument, thanks to the helper function `assignCrystVector`.
-* None.
 * Expose PowderPattern.GetPowderPatternObsSigma and PowderPattern.SetPowderPatternObsSigma from objcryst
 * Add ``AGENTS.md`` documenting contribution guidelines for AI coding agents
 (dependency chain, commit conventions, news-item policy, human-review
@@ -32,13 +31,9 @@ polarisation clock and fixes the polarisation-correction recalculation trigger.
 * ``quick_index()`` default minimum unit cell length lowered from 3 Å to 2.5 Å,
 allowing correct indexing of compact structures such as α-Fe, B, or ZRNCl
 (`issue #47 <https://github.com/diffpy/pyobjcryst/issues/47>`_).
-* None.
-* None.
 
 **Deprecated:**
 
-* None.
-* None.
 
 **Fixed:**
 
@@ -50,14 +45,10 @@ allowing correct indexing of compact structures such as α-Fe, B, or ZRNCl
 
 **Removed:**
 
-* None.
-* None.
 * Remove support for Python 3.11.
 
 **Security:**
 
-* None.
-* None.
 
 
 2025.1.0
