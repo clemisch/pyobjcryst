@@ -25,11 +25,23 @@
 
 #include <ObjCryst/ObjCryst/General.h>
 #include <ObjCryst/ObjCryst/PowderPattern.h>
+#include <ObjCryst/ObjCryst/ReflectionProfile.h>
 #include <ObjCryst/ObjCryst/ScatteringData.h>
 
 namespace bp = boost::python;
 using namespace boost::python;
 using namespace ObjCryst;
+
+namespace
+{
+
+void SetProfileCopy(PowderPatternDiffraction &pdiff,
+                    const ReflectionProfile &profile)
+{
+    pdiff.SetProfile(profile.CreateCopy());
+}
+
+} // namespace
 
 
 void wrap_powderpatterndiffraction()
@@ -60,6 +72,8 @@ void wrap_powderpatterndiffraction()
                 (ReflectionProfile& (PowderPatternDiffraction::*)())
                 &PowderPatternDiffraction::GetProfile,
                 return_internal_reference<>())
+        .def("SetProfile", &SetProfileCopy, bp::arg("profile"),
+                "Install an independent copy of a reflection profile.")
         .def("SetExtractionMode",
                 &PowderPatternDiffraction::SetExtractionMode,
                 (bp::arg("extract")=true, bp::arg("init")=false))
