@@ -75,10 +75,10 @@ vars.Add(EnumVariable(
 vars.Add(EnumVariable(
     'warnings',
     'warning flags policy',
-    'none', allowed_values=('all', 'none', 'default')))
+    'all', allowed_values=('all', 'none', 'default')))
 vars.Add(BoolVariable(
     'verbose',
-    'print build commands', False))
+    'print build commands', True))
 vars.Add(EnumVariable(
     'tool',
     'C++ compiler toolkit to be used',
