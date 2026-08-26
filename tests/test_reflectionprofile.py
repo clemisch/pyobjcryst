@@ -74,13 +74,15 @@ class TestReflectionProfile(unittest.TestCase):
         )
 
     def test_anisotropic_set_profile_par(self):
-        """SetProfilePar assigns P and retains symmetric default
+        """SetProfilePar assigns widths and retains symmetric default
         asymmetry."""
         profile = ReflectionProfilePseudoVoigtAnisotropic()
-        profile.SetProfilePar(1e-6, fwhmGaussP=2e-6)
+        profile.SetProfilePar(1e-6, fwhmLorentzX=2e-6)
+        profile.GetPar("P").SetValue(3e-6)
 
         self.assertAlmostEqual(profile.GetPar("W").GetValue(), 1e-6)
-        self.assertAlmostEqual(profile.GetPar("P").GetValue(), 2e-6)
+        self.assertAlmostEqual(profile.GetPar("X").GetValue(), 2e-6)
+        self.assertAlmostEqual(profile.GetPar("P").GetValue(), 3e-6)
         self.assertAlmostEqual(profile.GetPar("Asym0").GetValue(), 1.0)
 
     def test_anisotropic_profile_depends_on_hkl(self):
