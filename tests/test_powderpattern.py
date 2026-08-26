@@ -25,6 +25,7 @@ from pyobjcryst import ObjCrystException
 from pyobjcryst.indexing import CrystalCentering, CrystalSystem, quick_index
 from pyobjcryst.powderpattern import PowderPattern, SpaceGroupExplorer
 from pyobjcryst.radiation import RadiationType, WavelengthType
+from pyobjcryst.refinableobj import RefinableObj
 from pyobjcryst.reflectionprofile import ReflectionProfileType
 
 # ----------------------------------------------------------------------------
@@ -359,6 +360,72 @@ class TestPowderPatternBackground(unittest.TestCase):
 
 
 # End of class TestPowderPatternBackground
+
+# ----------------------------------------------------------------------------
+
+
+class TestPowderPatternBackgroundHist(unittest.TestCase):
+
+    def setUp(self):
+        self.pp = PowderPattern()
+        self.pp.SetPowderPatternPar(0, 0.1, 5)
+        self.background = self.pp.AddPowderPatternBackgroundHist()
+
+    def test_scaled_histogram(self):
+        histogram = np.arange(1.0, 6.0)
+        self.background.SetHistogram(histogram.tolist())
+
+        self.assertEqual(self.pp.GetNbPowderPatternComponent(), 1)
+        self.assertEqual(
+            self.background.GetClassName(), "PowderPatternBackgroundHist"
+        )
+        self.assertEqual(self.background.GetNbPar(), 1)
+        self.assertEqual(self.background.GetPar(0).GetName(), "Scale")
+        np.testing.assert_array_equal(
+            self.background.GetHistogram(), histogram
+        )
+
+        self.background.GetPar("Scale").SetValue(2.5)
+        np.testing.assert_allclose(
+            self.background.GetPowderPatternCalc(), 2.5 * histogram
+        )
+        np.testing.assert_allclose(
+            self.pp.GetPowderPatternCalc(), 2.5 * histogram
+        )
+
+        updated = np.full(5, 3.0)
+        self.background.SetHistogram(updated)
+        np.testing.assert_allclose(
+            self.background.GetPowderPatternCalc(), 2.5 * updated
+        )
+
+    def test_histogram_size_must_match_pattern(self):
+        self.background.SetHistogram(np.ones(4))
+
+        with self.assertRaisesRegex(
+            ObjCrystException, "histogram size does not match pattern size"
+        ):
+            self.background.GetPowderPatternCalc()
+
+    def test_xml_round_trip(self):
+        histogram = np.array([0.25, 0.5, 0.75, 1.0, 1.25])
+        self.background.SetName("dense background")
+        self.background.SetHistogram(histogram)
+        self.background.GetPar("Scale").SetValue(3.5)
+        self.background.GetPar("Scale").SetIsFixed(False)
+
+        xml = self.background.xml()
+        restored = self.pp.AddPowderPatternBackgroundHist()
+        RefinableObj.XMLInput(restored, xml)
+
+        self.assertEqual(restored.GetName(), "dense background")
+        self.assertEqual(restored.GetNbPar(), 1)
+        self.assertAlmostEqual(restored.GetPar("Scale").GetValue(), 3.5)
+        self.assertFalse(restored.GetPar("Scale").IsFixed())
+        np.testing.assert_allclose(restored.GetHistogram(), histogram)
+
+
+# End of class TestPowderPatternBackgroundHist
 
 # ----------------------------------------------------------------------------
 
