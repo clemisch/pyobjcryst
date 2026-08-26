@@ -36,7 +36,8 @@ class TestReflectionProfile(unittest.TestCase):
         self.profile = self.ppd.GetProfile()
 
     def test_concrete_pseudo_voigt_profiles(self):
-        """Concrete isotropic and anisotropic profiles are constructible."""
+        """Concrete isotropic and anisotropic profiles are
+        constructible."""
         isotropic = ReflectionProfilePseudoVoigt()
         anisotropic = ReflectionProfilePseudoVoigtAnisotropic()
 
@@ -73,7 +74,8 @@ class TestReflectionProfile(unittest.TestCase):
         )
 
     def test_anisotropic_set_profile_par(self):
-        """SetProfilePar assigns P and retains symmetric default asymmetry."""
+        """SetProfilePar assigns P and retains symmetric default
+        asymmetry."""
         profile = ReflectionProfilePseudoVoigtAnisotropic()
         profile.SetProfilePar(1e-6, fwhmGaussP=2e-6)
 
@@ -82,7 +84,8 @@ class TestReflectionProfile(unittest.TestCase):
         self.assertAlmostEqual(profile.GetPar("Asym0").GetValue(), 1.0)
 
     def test_anisotropic_profile_depends_on_hkl(self):
-        """Anisotropic Lorentz coefficients produce direction dependence."""
+        """Anisotropic Lorentz coefficients produce direction
+        dependence."""
         profile = ReflectionProfilePseudoVoigtAnisotropic()
         profile.SetProfilePar(
             1e-6,
@@ -99,7 +102,8 @@ class TestReflectionProfile(unittest.TestCase):
         self.assertFalse(np.allclose(h00, zero_k0))
 
     def test_set_profile_copies_reusable_template(self):
-        """One profile template can safely initialize multiple phases."""
+        """One profile template can safely initialize multiple
+        phases."""
         second = self.pp.AddPowderPatternDiffraction(self.crystal)
         template = ReflectionProfilePseudoVoigtAnisotropic()
         template.GetPar("W").SetValue(1e-6)
@@ -124,7 +128,8 @@ class TestReflectionProfile(unittest.TestCase):
         self.assertAlmostEqual(second_profile.GetPar("W").GetValue(), 1e-6)
 
     def test_set_profile_accepts_temporary(self):
-        """A temporary concrete profile is safely copied into the phase."""
+        """A temporary concrete profile is safely copied into the
+        phase."""
         self.ppd.SetProfile(ReflectionProfilePseudoVoigt())
         profile = self.ppd.GetProfile()
 
