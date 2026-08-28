@@ -145,13 +145,19 @@ void wrap_reflectionprofile()
         .def("CreateCopy", &ReflectionProfilePseudoVoigtTCH::CreateCopy,
              return_value_policy<manage_new_object>(),
              "Return an independent copy of this profile.")
-        .def("SetProfilePar", &ReflectionProfilePseudoVoigtTCH::SetProfilePar,
+        .def("SetProfilePar",
+             (void (ReflectionProfilePseudoVoigtTCH::*)(
+                 const REAL, const REAL, const REAL, const REAL,
+                 const REAL, const REAL, const REAL, const REAL))
+                 &ReflectionProfilePseudoVoigtTCH::SetProfilePar,
              (bp::arg("fwhmCagliotiW"), bp::arg("fwhmCagliotiU") = 0,
               bp::arg("fwhmCagliotiV") = 0,
               bp::arg("fwhmLorentzX") = 0,
               bp::arg("fwhmLorentzY") = 0,
-              bp::arg("fwhmLorentzZ") = 0),
-             "Set the TCH pseudo-Voigt U, V, W, X, Y and Z parameters.");
+              bp::arg("fwhmLorentzZ") = 0,
+              bp::arg("fwhmScherrerP") = 0,
+              bp::arg("scherrerLGmix") = 1),
+             "Set the TCH pseudo-Voigt U, V, W, X, Y, Z, P and LGmix parameters.");
 
     class_<ReflectionProfilePseudoVoigtAnisotropic,
            bases<ReflectionProfile> >(

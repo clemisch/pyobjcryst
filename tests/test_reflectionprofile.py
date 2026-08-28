@@ -79,7 +79,7 @@ class TestReflectionProfile(unittest.TestCase):
         profile = ReflectionProfilePseudoVoigtTCH()
         self.assertFalse(profile.IsAnisotropic())
         self.assertEqual(
-            {"U", "V", "W", "X", "Y", "Z"},
+            {"U", "V", "W", "X", "Y", "Z", "P", "LGmix"},
             {
                 profile.GetPar(i).GetName()
                 for i in range(profile.GetNbPar())
@@ -115,14 +115,30 @@ class TestReflectionProfile(unittest.TestCase):
             profile.GetFullProfileWidth(0.5, center, 1, 0, 0), hl
         )
 
+        size_width = np.deg2rad(0.03) / np.cos(center / 2)
+        profile.SetProfilePar(
+            0, fwhmScherrerP=np.deg2rad(0.03), scherrerLGmix=1
+        )
+        self.assertAlmostEqual(
+            profile.GetFullProfileWidth(0.5, center, 1, 0, 0), size_width
+        )
+        profile.SetProfilePar(
+            0, fwhmScherrerP=np.deg2rad(0.03), scherrerLGmix=0
+        )
+        self.assertAlmostEqual(
+            profile.GetFullProfileWidth(0.5, center, 1, 0, 0), size_width
+        )
+
         self.ppd.SetProfile(profile)
         installed = self.ppd.GetProfile()
         self.assertIsInstance(installed, ReflectionProfilePseudoVoigtTCH)
-        self.assertAlmostEqual(installed.GetPar("Z").GetValue(), hl)
+        self.assertAlmostEqual(installed.GetPar("P").GetValue(), np.deg2rad(0.03))
+        self.assertAlmostEqual(installed.GetPar("LGmix").GetValue(), 0)
 
         restored = ReflectionProfilePseudoVoigtTCH()
         RefinableObj.XMLInput(restored, profile.xml())
-        self.assertAlmostEqual(restored.GetPar("Z").GetValue(), hl)
+        self.assertAlmostEqual(restored.GetPar("P").GetValue(), np.deg2rad(0.03))
+        self.assertAlmostEqual(restored.GetPar("LGmix").GetValue(), 0)
 
     def test_anisotropic_set_profile_par(self):
         """SetProfilePar assigns widths and retains symmetric default
