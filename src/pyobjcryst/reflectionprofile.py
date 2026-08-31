@@ -75,7 +75,7 @@ __all__ = [
 from pyobjcryst._pyobjcryst import (
     ReflectionProfile,
     ReflectionProfilePseudoVoigt,
-    ReflectionProfilePseudoVoigtTCH,
     ReflectionProfilePseudoVoigtAnisotropic,
+    ReflectionProfilePseudoVoigtTCH,
     ReflectionProfileType,
 )

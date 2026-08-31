@@ -10,8 +10,8 @@ from pyobjcryst.refinableobj import RefinableObj
 from pyobjcryst.reflectionprofile import (
     ReflectionProfile,
     ReflectionProfilePseudoVoigt,
-    ReflectionProfilePseudoVoigtTCH,
     ReflectionProfilePseudoVoigtAnisotropic,
+    ReflectionProfilePseudoVoigtTCH,
 )
 
 
@@ -80,10 +80,7 @@ class TestReflectionProfile(unittest.TestCase):
         self.assertFalse(profile.IsAnisotropic())
         self.assertEqual(
             {"U", "V", "W", "X", "Y", "Z", "P", "LGmix"},
-            {
-                profile.GetPar(i).GetName()
-                for i in range(profile.GetNbPar())
-            },
+            {profile.GetPar(i).GetName() for i in range(profile.GetNbPar())},
         )
 
         center = np.deg2rad(30.0)
@@ -132,12 +129,16 @@ class TestReflectionProfile(unittest.TestCase):
         self.ppd.SetProfile(profile)
         installed = self.ppd.GetProfile()
         self.assertIsInstance(installed, ReflectionProfilePseudoVoigtTCH)
-        self.assertAlmostEqual(installed.GetPar("P").GetValue(), np.deg2rad(0.03))
+        self.assertAlmostEqual(
+            installed.GetPar("P").GetValue(), np.deg2rad(0.03)
+        )
         self.assertAlmostEqual(installed.GetPar("LGmix").GetValue(), 0)
 
         restored = ReflectionProfilePseudoVoigtTCH()
         RefinableObj.XMLInput(restored, profile.xml())
-        self.assertAlmostEqual(restored.GetPar("P").GetValue(), np.deg2rad(0.03))
+        self.assertAlmostEqual(
+            restored.GetPar("P").GetValue(), np.deg2rad(0.03)
+        )
         self.assertAlmostEqual(restored.GetPar("LGmix").GetValue(), 0)
 
     def test_anisotropic_set_profile_par(self):
