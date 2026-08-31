@@ -367,9 +367,7 @@ class TestPowderPatternDiffraction(unittest.TestCase):
     def test_X2XCorrPhase_flat_detector_displacement(self):
         pp = PowderPattern()
         pp.SetWavelength(1.54056)
-        pp.SetPowderPatternPar(
-            np.deg2rad(5), np.deg2rad(0.1), 851
-        )
+        pp.SetPowderPatternPar(np.deg2rad(5), np.deg2rad(0.1), 851)
         crystal = makeCrystal(*makeScatterer())
         pdiff = pp.AddPowderPatternDiffraction(crystal)
 
